@@ -1,0 +1,17 @@
+name: Run BAT on server
+
+on:
+  push:
+    branches:
+      - main   # أو الفرع اللي تبيه
+
+jobs:
+  deploy:
+    runs-on: self-hosted  # لازم تربط سيرفرك كـ self-hosted runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run BAT file
+        run: |
+          C:\p1\complete-update.bat
