@@ -112,7 +112,7 @@ export default function MailBody({
                 </div>
 
                 {/* Action Buttons - Outlook Style */}
-                {mailBox === "info" && (
+                {mailBox !== "auto" && (
                   <ReplyDialog
                     originalMessageId={mail.id}
                     refId={mail.refId}
