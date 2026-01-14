@@ -27,8 +27,13 @@ export default function EmailCard({
   const { logMailRead, isPending } = useLogMailRead();
 
   const router = useRouter();
-  const isUnread = !message.isRead && type === "inbox";
 
+  // Determine if the message is unread
+  const isUnread =
+    (!message.isRead && type === "inbox") ||
+    (!message.isRead && type === "junk");
+
+  // Get sender initials
   const initials = message.senderName?.charAt(0).toUpperCase() || "u";
 
   // Check if message has no reference
@@ -38,6 +43,7 @@ export default function EmailCard({
   const encodedMessageId = encodeURIComponent(message.id);
   const detailUrl = `/email-hub/${mailboxType}/${folder}/${encodedMessageId}`;
 
+  // Click handler
   const handleClick = () => {
     if (isPending) return;
     if (isUnread) {

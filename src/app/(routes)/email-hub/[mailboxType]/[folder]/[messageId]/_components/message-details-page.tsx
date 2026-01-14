@@ -48,7 +48,9 @@ export default async function MessageDetailsPage({
       <MailBody mailBox={mailBox} mail={mainMessage} />
 
       {/* Replies Section */}
-      {replies.length > 0 && <MailReplies replies={replies} />}
+      {replies.length > 0 && (
+        <MailReplies replies={replies} mail={mainMessage} />
+      )}
 
       {/* View History */}
       {/* {views && views.length > 0 && <MailHistory messages={views} />} */}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { MailMessageDetails } from "@/lib/api/mail.api";
@@ -11,15 +12,34 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import ReplyDialog from "./reply-dialog";
+import { useMemo } from "react";
+import { useTaskOrCase } from "@/hooks/use-task-or-case";
 
 export default function MailReplies({
   replies,
+  mail,
 }: {
   replies: MailMessageDetails[];
+  mail: MailMessageDetails;
 }) {
   const getInitials = (name: string) => {
     return name?.charAt(0).toUpperCase() || "U";
   };
+
+  // Fetch data based on refType if it exists
+  const refType = mail.refType as "task" | "case" | undefined;
+  const { data: refData } = useTaskOrCase(refType);
+
+  // Find the selected item and get attachments
+  const availableAttachments = useMemo(() => {
+    if (!refData?.data || !mail.refId) return [];
+
+    const selectedItem = refData.data.find(
+      (item: any) => item.encryptedId === mail.refId
+    );
+
+    return selectedItem?.attachments || [];
+  }, [refData, mail.refId]);
 
   return (
     <div className="mt-5 space-y-4">
@@ -135,6 +155,7 @@ export default function MailReplies({
                             originalMessageId={reply.id}
                             refId={reply.refId}
                             refType={reply.refType as "case" | "task"}
+                            availableAttachments={availableAttachments}
                           />
                         </div>
                       </div>

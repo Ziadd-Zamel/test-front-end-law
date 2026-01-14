@@ -159,10 +159,13 @@ export async function searchMailService({
 }) {
   const token = await getAuthHeader();
 
+  // Mail box type
+  const mailboxTypes =
+    mailboxType === "Employee" ? "employeeemail" : mailboxType.toLowerCase();
+
+  // Response
   const response = await fetch(
-    `${
-      process.env.MAIL_API
-    }/Mail/search?mailBox=${mailboxType.toLocaleLowerCase()}&pageNumber=${pageNumber}&pageSize=${pageSize}`,
+    `${process.env.MAIL_API}/Mail/search?mailBox=${mailboxTypes}&pageNumber=${pageNumber}&pageSize=${pageSize}`,
     {
       method: "POST",
       headers: {
