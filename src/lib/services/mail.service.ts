@@ -149,16 +149,20 @@ export async function replayMailService({ body }: { body: replayMailBody }) {
 export async function searchMailService({
   body,
   mailboxType,
+  pageNumber = 1,
+  pageSize = 20,
 }: {
   body: searchMailBody;
   mailboxType: mailboxType;
+  pageNumber?: number;
+  pageSize?: number;
 }) {
   const token = await getAuthHeader();
 
   const response = await fetch(
     `${
       process.env.MAIL_API
-    }/Mail/search?mailBox=${mailboxType.toLocaleLowerCase()}`,
+    }/Mail/search?mailBox=${mailboxType.toLocaleLowerCase()}&pageNumber=${pageNumber}&pageSize=${pageSize}`,
     {
       method: "POST",
       headers: {
@@ -180,7 +184,6 @@ export async function searchMailService({
 
 // Log Mail Read
 export async function logMailReadService(mailId: string) {
-  
   const token = await getAuthHeader();
 
   const response = await fetch(

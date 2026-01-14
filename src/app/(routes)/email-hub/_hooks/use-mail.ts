@@ -159,11 +159,20 @@ export function useSearchMail() {
     mutationFn: async ({
       body,
       mailboxType,
+      pageNumber,
+      pageSize,
     }: {
       body: searchMailBody;
       mailboxType: mailboxType;
+      pageNumber?: number;
+      pageSize?: number;
     }) => {
-      const result = await searchMailService({ body, mailboxType });
+      const result = await searchMailService({
+        body,
+        mailboxType,
+        pageNumber,
+        pageSize,
+      });
 
       if (!result.success) {
         throw new Error(result.message);

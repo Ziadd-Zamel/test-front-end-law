@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -37,6 +38,10 @@ export default function MailSearchPage({
   const [toDate, setToDate] = useState<Date | undefined>();
   const [hasSearched, setHasSearched] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allMessages, setAllMessages] = useState<any[]>([]);
+  const [pagination, setPagination] = useState<any>(null);
+
   // Hooks
   const { data: refData, isPending: refPending } = useTaskOrCase(refType);
   const { data: clientData, isLoading: clientLoading } =
@@ -57,13 +62,52 @@ export default function MailSearchPage({
     if (fromDate) body.fromDate = fromDate.toISOString();
     if (toDate) body.toDate = toDate.toISOString();
 
-    searchMail({
-      body: body,
-      mailboxType: mailboxType,
-    });
+    searchMail(
+      {
+        body: body,
+        mailboxType: mailboxType,
+        pageNumber: 1,
+        pageSize: 20,
+      },
+      {
+        onSuccess: (data) => {
+          setAllMessages(data.messages || []);
+          setPagination(data.pagination);
+          setCurrentPage(1);
+        },
+      }
+    );
     setHasSearched(true);
   };
-  console.log(searchResults);
+
+  const handleLoadMore = () => {
+    const body: any = {};
+
+    if (query) body.query = query;
+    if (refType) body.refType = refType;
+    if (refId) body.refId = refId;
+    if (clientId) body.clientId = clientId;
+    if (messageType) body.messageType = messageType;
+    if (fromDate) body.fromDate = fromDate.toISOString();
+    if (toDate) body.toDate = toDate.toISOString();
+
+    searchMail(
+      {
+        body: body,
+        mailboxType: mailboxType,
+        pageNumber: currentPage + 1,
+        pageSize: 20,
+      },
+      {
+        onSuccess: (data) => {
+          setAllMessages((prev) => [...prev, ...(data.messages || [])]);
+          setPagination(data.pagination);
+          setCurrentPage((prev) => prev + 1);
+        },
+      }
+    );
+  };
+
   const handleReset = () => {
     setQuery("");
     setRefType("case");
@@ -73,6 +117,9 @@ export default function MailSearchPage({
     setFromDate(undefined);
     setToDate(undefined);
     setHasSearched(false);
+    setAllMessages([]);
+    setPagination(null);
+    setCurrentPage(1);
   };
 
   return (
@@ -278,7 +325,7 @@ export default function MailSearchPage({
         )}
 
         {/* Loading State */}
-        {hasSearched && isPending && (
+        {hasSearched && isPending && allMessages.length === 0 && (
           <div className="w-full box-container">
             <Card>
               <CardContent className="py-16">
@@ -301,48 +348,61 @@ export default function MailSearchPage({
         )}
 
         {/* Empty Results State */}
-        {hasSearched &&
-          !isPending &&
-          !error &&
-          (!searchResults.messages || searchResults.messages.length === 0) && (
-            <div className="w-full box-container">
-              <Card>
-                <CardContent className="py-16">
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="rounded-full bg-muted p-6">
-                      <FileX className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                    <div className="text-center space-y-2">
-                      <h3 className="text-xl font-semibold">لا توجد نتائج</h3>
-                      <p className="text-muted-foreground max-w-md">
-                        لم يتم العثور على أي رسائل تطابق معايير البحث. حاول
-                        تعديل الفلاتر والبحث مرة أخرى.
-                      </p>
-                    </div>
+        {hasSearched && !isPending && !error && allMessages.length === 0 && (
+          <div className="w-full box-container">
+            <Card>
+              <CardContent className="py-16">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <div className="rounded-full bg-muted p-6">
+                    <FileX className="h-12 w-12 text-muted-foreground" />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+                  <div className="text-center space-y-2">
+                    <h3 className="text-xl font-semibold">لا توجد نتائج</h3>
+                    <p className="text-muted-foreground max-w-md">
+                      لم يتم العثور على أي رسائل تطابق معايير البحث. حاول تعديل
+                      الفلاتر والبحث مرة أخرى.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Results State */}
-        {hasSearched &&
-          !isPending &&
-          !error &&
-          searchResults.messages &&
-          searchResults.messages.length > 0 && (
-            <div className="">
-              {searchResults.messages.map((message: any) => (
-                <EmailCard
-                  key={message.id}
-                  message={message}
-                  type="inbox"
-                  mailboxType="Info"
-                  folder="inbox"
-                />
-              ))}
-            </div>
-          )}
+        {hasSearched && !error && allMessages.length > 0 && (
+          <div className="">
+            {allMessages.map((message: any) => (
+              <EmailCard
+                key={message.id}
+                message={message}
+                type="inbox"
+                mailboxType="Info"
+                folder="inbox"
+              />
+            ))}
+
+            {pagination?.hasNextPage && (
+              <div className="flex justify-center py-6 px-4">
+                <Button
+                  onClick={handleLoadMore}
+                  disabled={isPending}
+                  variant="outline"
+                  className="min-w-[120px]"
+                >
+                  {isPending ? (
+                    <>
+                      <span>جاري التحميل...</span>
+                      <Loader2 className="h-4 w-4 me-2 animate-spin" />
+                    </>
+                  ) : (
+                    <span>تحميل المزيد</span>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
