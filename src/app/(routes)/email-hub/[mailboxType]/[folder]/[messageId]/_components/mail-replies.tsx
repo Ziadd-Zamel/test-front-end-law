@@ -12,7 +12,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import ReplyDialog from "./reply-dialog";
 import { useMemo } from "react";
 import { useTaskOrCase } from "@/hooks/use-task-or-case";
 
@@ -36,7 +35,7 @@ export default function MailReplies({
     if (!refData?.data || !mail.refId) return [];
 
     const selectedItem = refData.data.find(
-      (item: any) => item.encryptedId === mail.refId
+      (item: any) => item.encryptedId === mail.refId,
     );
 
     return selectedItem?.attachments || [];
@@ -152,12 +151,12 @@ export default function MailReplies({
                               </div>
                             </div>
                           </div>
-                          <ReplyDialog
+                          {/* <ReplyDialog
                             originalMessageId={reply.id}
                             refId={reply.refId}
                             refType={reply.refType as "case" | "task"}
                             availableAttachments={availableAttachments}
-                          />
+                          /> */}
                         </div>
                       </div>
 

@@ -34,7 +34,7 @@ export default function EmailCard({
     (!message.isRead && type === "junk");
 
   // Check if message is undelivered
-  const isUndelivered = message.isDelivered;
+  const isUndelivered = !message.isDelivered;
 
   // Get sender initials
   const initials = message.senderName?.charAt(0).toUpperCase() || "u";

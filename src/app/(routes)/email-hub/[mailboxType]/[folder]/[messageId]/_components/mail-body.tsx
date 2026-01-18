@@ -14,9 +14,11 @@ import { MailAttachmentCard } from "./mail-attachment-card";
 export default function MailBody({
   mail,
   mailBox,
+  lastReplyId,
 }: {
   mail: MailMessageDetails;
   mailBox?: "auto" | "info" | "employeeemail";
+  lastReplyId: string | null;
 }) {
   const getInitials = (name: string) => {
     return name?.charAt(0).toUpperCase() || "U";
@@ -31,7 +33,7 @@ export default function MailBody({
     if (!refData?.data || !mail.refId) return [];
 
     const selectedItem = refData.data.find(
-      (item: any) => item.encryptedId === mail.refId
+      (item: any) => item.encryptedId === mail.refId,
     );
 
     return selectedItem?.attachments || [];
@@ -114,7 +116,7 @@ export default function MailBody({
                 {/* Action Buttons - Outlook Style */}
                 {mailBox !== "auto" && (
                   <ReplyDialog
-                    originalMessageId={mail.id}
+                    originalMessageId={lastReplyId || ""}
                     refId={mail.refId}
                     refType={refType}
                     availableAttachments={availableAttachments}

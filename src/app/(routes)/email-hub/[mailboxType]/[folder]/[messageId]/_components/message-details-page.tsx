@@ -21,7 +21,7 @@ export default async function MessageDetailsPage({
 }: PageProps) {
   // Fetching
   const [payload, error] = await catchError(() =>
-    getMessageDetails(messageId, mailBox, employeeId)
+    getMessageDetails(messageId, mailBox, employeeId),
   );
 
   // Handle error state
@@ -40,12 +40,19 @@ export default async function MessageDetailsPage({
   // Rest are replies
   const replies = payload?.data?.messages.slice(1);
 
+  // Get the last reply's ID
+  const lastReplyId =
+    replies.length > 0 ? replies[replies.length - 1].id : null;
   // const views = mainMessage.showMessages;
 
   return (
     <div className="min-h-screen bg-gray-50 box-container py-10">
       {/* Main Email */}
-      <MailBody mailBox={mailBox} mail={mainMessage} />
+      <MailBody
+        lastReplyId={lastReplyId}
+        mailBox={mailBox}
+        mail={mainMessage}
+      />
 
       {/* Replies Section */}
       {replies.length > 0 && (
