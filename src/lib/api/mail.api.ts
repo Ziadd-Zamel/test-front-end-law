@@ -11,6 +11,7 @@ export interface MailMessage {
   receivedDateTime: string;
   sentDateTime: string;
   isRead: boolean;
+  isDelivered: boolean;
   isDraft: boolean;
   isFlagged: boolean;
   hasAttachments: boolean;
