@@ -8,7 +8,7 @@ export function FileGeneratorButton({ path }: { path: string }) {
   const { generateFile, isPending } = useGenerateFile();
 
   const handleGenerate = () => {
-    generateFile(path);
+    generateFile({ filepath: path });
   };
 
   return (

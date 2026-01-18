@@ -7,7 +7,7 @@ import { MailAttachment } from "@/lib/api/mail.api";
 
 // Type guard to check if it's a SettlementAttachment
 function isSettlementAttachment(
-  pdf: SettlementAttachments | MailAttachment
+  pdf: SettlementAttachments | MailAttachment,
 ): pdf is SettlementAttachments {
   return "description" in pdf;
 }
@@ -22,7 +22,7 @@ export function PdfCard({
   const { generateFile, isPending } = useGenerateFile();
 
   const handleDownload = () => {
-    if (!isPending) generateFile(pdf.relativePath);
+    if (!isPending) generateFile({ filepath: pdf.relativePath });
   };
 
   const isSettlement = isSettlementAttachment(pdf);
@@ -39,7 +39,7 @@ export function PdfCard({
           "cursor-pointer transition",
           "hover:bg-gray-50 hover:shadow-md hover:scale-105",
           "bg-red-50 text-red-600",
-          isPending && "opacity-60 cursor-not-allowed"
+          isPending && "opacity-60 cursor-not-allowed",
         )}
         title={pdf.originalName} // Tooltip on hover
       >
@@ -62,7 +62,7 @@ export function PdfCard({
         "border rounded-lg sm:rounded-xl",
         "cursor-pointer transition",
         "hover:bg-gray-50 hover:shadow-sm",
-        isPending && "opacity-60 cursor-not-allowed"
+        isPending && "opacity-60 cursor-not-allowed",
       )}
     >
       {/* PDF Icon */}
