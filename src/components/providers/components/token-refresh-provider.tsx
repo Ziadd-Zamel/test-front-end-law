@@ -1,88 +1,76 @@
 "use client";
+
 import { useRefreshToken } from "@/app/auth/_hooks/use-auth";
 import { useEffect, useRef } from "react";
 import Cookies from "js-cookie";
 
+const SESSION_OWNER_KEY = "session-owner-id";
+const REFRESH_INTERVAL = 10000;
+const STORAGE_KEY = "token-expires-at";
+
+function getMyTabId() {
+  let id = sessionStorage.getItem(SESSION_OWNER_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    sessionStorage.setItem(SESSION_OWNER_KEY, id);
+  }
+  return id;
+}
+
+function isLeader() {
+  const owner = localStorage.getItem(SESSION_OWNER_KEY);
+  const me = getMyTabId();
+  return owner && me && owner === me;
+}
+
 interface TokenRefreshProviderProps {
   children: React.ReactNode;
 }
-
-const REFRESH_INTERVAL = 10000;
-const STORAGE_KEY = "token-expires-at";
 
 export function TokenRefreshProvider({ children }: TokenRefreshProviderProps) {
   const { refreshToken, isPending, session } = useRefreshToken();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!session) {
-      return;
+    if (!session) return;
+
+    if (!isLeader()) return;
+
+    const handleStorageChange = () => {
+      if (!localStorage.getItem(SESSION_OWNER_KEY)) {
+        sessionStorage.setItem(SESSION_OWNER_KEY, getMyTabId());
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    const run = () => {
+      if (!isLeader()) return;
+      if (!isPending) refreshToken();
+    };
+
+    const now = Date.now();
+    const storedNext = Cookies.get(STORAGE_KEY);
+
+    let initialDelay = REFRESH_INTERVAL;
+
+    if (storedNext) {
+      const next = parseInt(storedNext, 10);
+      const diff = next - now;
+      if (diff > 0) initialDelay = diff;
     }
-    const setupRefreshInterval = () => {
-      // Clear any existing interval
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
 
-      // Get the stored next refresh time
-      const storedNextTime = Cookies.get(STORAGE_KEY);
-      const now = Date.now();
+    const initialTimeout = setTimeout(() => {
+      run();
+      intervalRef.current = setInterval(run, REFRESH_INTERVAL);
+    }, initialDelay);
 
-      let nextRefreshTime: number;
-      let initialDelay: number;
-
-      if (storedNextTime) {
-        // Parse the stored time
-        nextRefreshTime = parseInt(storedNextTime, 10);
-
-        // Calculate how much time is left
-        const timeLeft = nextRefreshTime - now;
-
-        if (timeLeft <= 0) {
-          // Time has already passed, refresh immediately and set new schedule
-          if (!isPending) {
-            refreshToken();
-          }
-          nextRefreshTime = now + REFRESH_INTERVAL;
-          initialDelay = REFRESH_INTERVAL;
-        } else {
-          // Wait for the remaining time
-          initialDelay = timeLeft;
-        }
-      } else {
-        // No stored time, start fresh
-        nextRefreshTime = now + REFRESH_INTERVAL;
-        initialDelay = REFRESH_INTERVAL;
-      }
-
-      // Set up the first timeout for the initial delay
-      const initialTimeout = setTimeout(() => {
-        if (!isPending) {
-          refreshToken();
-        }
-
-        // Now set up the regular interval
-        intervalRef.current = setInterval(() => {
-          if (!isPending) {
-            refreshToken();
-          }
-        }, REFRESH_INTERVAL);
-      }, initialDelay);
-
-      // Store the timeout so we can clear it on cleanup
-      return initialTimeout;
-    };
-
-    const initialTimeout = setupRefreshInterval();
-
-    // Cleanup function
     return () => {
+      window.removeEventListener("storage", handleStorageChange);
       clearTimeout(initialTimeout);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [refreshToken, isPending, session]);
+  }, [session, isPending, refreshToken]);
 
   return <>{children}</>;
 }

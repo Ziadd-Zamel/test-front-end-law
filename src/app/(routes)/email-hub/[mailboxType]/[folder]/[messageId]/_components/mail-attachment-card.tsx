@@ -75,10 +75,16 @@ function getIconColor(extension: string): string {
 // }
 
 export function MailAttachmentCard({ pdf }: { pdf: MailAttachment }) {
+  console.log(pdf);
   const { generateFile, isPending } = useGenerateFile();
 
   const handleDownload = () => {
-    if (!isPending) generateFile(pdf.relativePath);
+    if (!isPending)
+      generateFile({
+        filepath: pdf.relativePath,
+        contentType: pdf.contentType,
+        name: pdf.originalName,
+      });
   };
 
   const extension = getFileExtension(pdf.originalName);
@@ -96,7 +102,7 @@ export function MailAttachmentCard({ pdf }: { pdf: MailAttachment }) {
         "hover:bg-gray-50 hover:border-gray-300",
         "transition-all",
         "min-w-0",
-        isPending && "opacity-60 cursor-wait"
+        isPending && "opacity-60 cursor-wait",
       )}
     >
       {/* File Icon */}

@@ -20,7 +20,7 @@ export default async function Providers({ children }: ProvidersProps) {
           >
             <NuqsAdapter>
               <FingerprintProvider>
-                {/* <PermissionNotificationListener /> */}
+                <PermissionNotificationListener />
                 {children}
                 <Toaster />
               </FingerprintProvider>

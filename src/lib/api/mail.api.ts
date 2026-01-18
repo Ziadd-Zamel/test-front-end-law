@@ -77,6 +77,7 @@ export interface MailAttachment {
   attechmentId: string;
   originalName: string;
   relativePath: string;
+  contentType: string;
   downloadUrl: string | null;
 }
 
@@ -88,7 +89,7 @@ export interface MailDetailsResponse {
 export const getMailMessages = async (
   mailboxType: "Info" | "Auto" | "Employee",
   folder: "inbox" | "sent" | "junk",
-  skipToken?: string
+  skipToken?: string,
 ): Promise<APIResponse<MailListResponse>> => {
   const baseUrl = `${process.env.MAIL_API}/Mail/${mailboxType}/${folder}`;
   const url = skipToken ? `${baseUrl}?skipToken=${skipToken}` : baseUrl;
@@ -116,7 +117,7 @@ export const getMailMessages = async (
 export const getMessageDetails = async (
   messageId: string,
   mailBox: "auto" | "info" | "employeeemail",
-  employeeId?: number
+  employeeId?: number,
 ): Promise<APIResponse<MailDetailsResponse>> => {
   const baseUrl = `${process.env.MAIL_API}/Mail/Get-Message-Details`;
   const params = new URLSearchParams();

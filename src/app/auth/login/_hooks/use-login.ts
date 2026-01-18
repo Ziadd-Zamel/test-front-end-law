@@ -7,6 +7,8 @@ import Cookies from "js-cookie";
 import { useFingerprint } from "@/components/providers/components/fingerprint-client";
 import { LocationData } from "@/lib/api/location.api";
 
+const SESSION_OWNER_KEY = "session-owner-id";
+
 interface LoginWithLocation extends LoginFields {
   locationData?: LocationData;
 }
@@ -40,34 +42,32 @@ export default function useLogin() {
         const message = parts[2];
 
         Cookies.set("verificationToken", token);
-
         toast.info(message);
         router.push("/auth/otp-login/otp");
         return { requiresVerification: true };
       }
 
-      if (response?.error) {
-        throw new Error(response.error);
-      }
+      if (response?.error) throw new Error(response.error);
 
       return response;
     },
+
     onSuccess: (data) => {
-      if (data && "requiresVerification" in data && data.requiresVerification) {
+      if (data && "requiresVerification" in data && data.requiresVerification)
         return;
-      }
+
+      const tabId = crypto.randomUUID();
+      localStorage.setItem(SESSION_OWNER_KEY, tabId);
+      sessionStorage.setItem(SESSION_OWNER_KEY, tabId);
 
       toast.success("مرحباً بك! تم تسجيل دخولك بنجاح.");
       router.push("/");
     },
+
     onError: (error) => {
       toast.error(error?.message || "حدث خطأ أثناء تسجيل الدخول");
     },
   });
 
-  return {
-    isPending,
-    error,
-    login: mutate,
-  };
+  return { isPending, error, login: mutate };
 }
