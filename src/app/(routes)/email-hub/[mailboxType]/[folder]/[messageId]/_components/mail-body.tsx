@@ -116,7 +116,7 @@ export default function MailBody({
                 {/* Action Buttons - Outlook Style */}
                 {mailBox !== "auto" && (
                   <ReplyDialog
-                    originalMessageId={lastReplyId || ""}
+                    originalMessageId={lastReplyId || mail.id}
                     refId={mail.refId}
                     refType={refType}
                     availableAttachments={availableAttachments}

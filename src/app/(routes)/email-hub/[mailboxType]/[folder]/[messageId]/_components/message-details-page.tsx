@@ -38,20 +38,18 @@ export default async function MessageDetailsPage({
   const mainMessage = payload?.data?.messages[0];
 
   // Rest are replies
-  const replies = payload?.data?.messages.slice(1);
+  const replies = payload?.data?.messages;
 
   // Get the last reply's ID
-  const lastReplyId =
-    replies.length > 0 ? replies[replies.length - 1].id : null;
-  // const views = mainMessage.showMessages;
+  const lastReplyId = replies[replies.length - 1];
 
   return (
     <div className="min-h-screen bg-gray-50 box-container py-10">
       {/* Main Email */}
       <MailBody
-        lastReplyId={lastReplyId}
+        lastReplyId={mainMessage.id}
         mailBox={mailBox}
-        mail={mainMessage}
+        mail={lastReplyId}
       />
 
       {/* Replies Section */}
