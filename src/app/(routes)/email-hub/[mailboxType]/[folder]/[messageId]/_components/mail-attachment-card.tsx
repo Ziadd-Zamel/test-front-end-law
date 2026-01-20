@@ -75,7 +75,6 @@ function getIconColor(extension: string): string {
 // }
 
 export function MailAttachmentCard({ pdf }: { pdf: MailAttachment }) {
-  console.log(pdf);
   const { generateFile, isPending } = useGenerateFile();
 
   const handleDownload = () => {

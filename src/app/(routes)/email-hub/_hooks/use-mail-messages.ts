@@ -27,7 +27,7 @@ async function fetchMailMessages(
   mailboxType: "Info" | "Auto" | "Employee",
   folder: "inbox" | "sent" | "junk",
   pageNumber: number = 1,
-  pageSize: number = 20
+  pageSize: number = 20,
 ): Promise<MailAPISuccessResponse> {
   const params = new URLSearchParams({
     mailboxType,
@@ -37,7 +37,6 @@ async function fetchMailMessages(
   });
 
   const response = await fetch(`/api/mail?${params.toString()}`);
-  console.log("responseresponse", response);
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message || "Failed to fetch messages");
@@ -51,7 +50,7 @@ async function fetchMailMessages(
 export function useMailMessages(
   mailboxType: "Info" | "Auto" | "Employee",
   folder: "inbox" | "sent" | "junk",
-  pageSize: number = 20
+  pageSize: number = 20,
 ) {
   return useInfiniteQuery({
     queryKey: ["mail", mailboxType, folder, pageSize],

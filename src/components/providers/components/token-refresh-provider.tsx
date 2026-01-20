@@ -23,6 +23,15 @@ function isLeader() {
   return owner && me && owner === me;
 }
 
+function tryBecomeLeader() {
+  const owner = localStorage.getItem(SESSION_OWNER_KEY);
+  if (!owner) {
+    localStorage.setItem(SESSION_OWNER_KEY, getMyTabId());
+    return true;
+  }
+  return isLeader();
+}
+
 interface TokenRefreshProviderProps {
   children: React.ReactNode;
 }
@@ -34,15 +43,22 @@ export function TokenRefreshProvider({ children }: TokenRefreshProviderProps) {
   useEffect(() => {
     if (!session) return;
 
-    if (!isLeader()) return;
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === SESSION_OWNER_KEY && !e.newValue) {
+        tryBecomeLeader();
+      }
+    };
 
-    const handleStorageChange = () => {
-      if (!localStorage.getItem(SESSION_OWNER_KEY)) {
-        sessionStorage.setItem(SESSION_OWNER_KEY, getMyTabId());
+    const handleBeforeUnload = () => {
+      if (isLeader()) {
+        localStorage.removeItem(SESSION_OWNER_KEY);
       }
     };
 
     window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    tryBecomeLeader();
 
     const run = () => {
       if (!isLeader()) return;
@@ -67,6 +83,7 @@ export function TokenRefreshProvider({ children }: TokenRefreshProviderProps) {
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
       clearTimeout(initialTimeout);
       if (intervalRef.current) clearInterval(intervalRef.current);
     };

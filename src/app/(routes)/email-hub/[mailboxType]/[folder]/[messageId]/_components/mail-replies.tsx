@@ -1,10 +1,10 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { MailMessageDetails } from "@/lib/api/mail.api";
 import { formatDate } from "@/lib/utils/format-date";
-import { MessageSquare, Paperclip, Eye } from "lucide-react";
+import { Paperclip, Eye } from "lucide-react";
 import { MailAttachmentCard } from "./mail-attachment-card";
 import {
   Accordion,
@@ -12,12 +12,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useMemo } from "react";
-import { useTaskOrCase } from "@/hooks/use-task-or-case";
 
 export default function MailReplies({
   replies,
-  mail,
 }: {
   replies: MailMessageDetails[];
   mail: MailMessageDetails;
@@ -26,25 +23,10 @@ export default function MailReplies({
     return name?.charAt(0).toUpperCase() || "U";
   };
 
-  // Fetch data based on refType if it exists
-  const refType = mail.refType as "task" | "case" | undefined;
-  const { data: refData } = useTaskOrCase(refType);
-
-  // Find the selected item and get attachments
-  const availableAttachments = useMemo(() => {
-    if (!refData?.data || !mail.refId) return [];
-
-    const selectedItem = refData.data.find(
-      (item: any) => item.encryptedId === mail.refId,
-    );
-
-    return selectedItem?.attachments || [];
-  }, [refData, mail.refId]);
-
   return (
     <div className="mt-5 space-y-4">
       {/* Header Card */}
-      <Card className="overflow-hidden p-0 border-0 shadow-sm">
+      {/* <Card className="overflow-hidden p-0 border-0 shadow-sm">
         <div className="border-b border-gray-200 bg-white px-6 py-4">
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100">
@@ -56,7 +38,7 @@ export default function MailReplies({
             </span>
           </div>
         </div>
-      </Card>
+      </Card> */}
 
       {/* Individual Reply Accordions */}
       <Accordion type="single" collapsible className="space-y-4">

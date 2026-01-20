@@ -25,11 +25,11 @@ export default function PdfUploader({
   size = "default",
 }: PdfUploaderProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(
-    value?.file || null
+    value?.file || null,
   );
   const [fileName, setFileName] = useState(value?.name || "");
   const [fileDescription, setFileDescription] = useState(
-    value?.description || ""
+    value?.description || "",
   );
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,7 +37,6 @@ export default function PdfUploader({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      console.log("File selected:", file.name, file.type, file.size);
       setSelectedFile(file);
       updateParent(file, fileName, fileDescription);
     }
@@ -132,10 +131,10 @@ export default function PdfUploader({
             disabled
               ? "opacity-50 cursor-not-allowed"
               : dragActive
-              ? "border-blue-500 bg-blue-50 scale-[1.02] cursor-pointer"
-              : selectedFile
-              ? "border-green-500 bg-green-50 hover:bg-green-100 cursor-pointer"
-              : "border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-blue-400 cursor-pointer"
+                ? "border-blue-500 bg-blue-50 scale-[1.02] cursor-pointer"
+                : selectedFile
+                  ? "border-green-500 bg-green-50 hover:bg-green-100 cursor-pointer"
+                  : "border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-blue-400 cursor-pointer"
           }`}
         >
           {selectedFile ? (

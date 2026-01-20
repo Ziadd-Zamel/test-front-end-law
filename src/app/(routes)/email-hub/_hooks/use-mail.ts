@@ -202,7 +202,6 @@ export function useLogMailRead() {
   const { isPending, error, mutate } = useMutation({
     mutationFn: async (mailId: string) => {
       const result = await logMailReadService(mailId);
-      console.log(result);
       if (!result.success) {
         throw new Error(result.message);
       }

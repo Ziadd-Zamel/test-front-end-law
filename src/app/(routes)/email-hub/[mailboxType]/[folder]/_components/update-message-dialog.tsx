@@ -32,24 +32,19 @@ export default function UpdateMessageDialog({
 }) {
   const { updateMessage, isPending } = useUpdateMessage();
   const [refType, setRefType] = useState<"task" | "case" | undefined>(
-    undefined
+    undefined,
   );
   const [refId, setRefId] = useState<string>("");
 
   const { data: refData, isPending: refPending } = useTaskOrCase(refType);
 
   const selectedItem = refData?.data?.find(
-    (item: any) => item.encryptedId === refId
+    (item: any) => item.encryptedId === refId,
   );
 
   function handleSubmit() {
     if (!refType || !refId) return;
 
-    console.log({
-      messageId,
-      refType,
-      refId,
-    });
     updateMessage({
       messageId,
       refType,
