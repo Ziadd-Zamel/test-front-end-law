@@ -87,12 +87,12 @@ export function useGenerateFile() {
       if (!result.success) {
         throw new Error(result.message || "Failed to generate file");
       }
-
+      console.log(result);
       // Return both the API response and the passed parameters
       return {
         ...result.data,
         passedContentType: contentType,
-        passedName: name,
+        passedName: result.data.fileName || name,
       };
     },
 

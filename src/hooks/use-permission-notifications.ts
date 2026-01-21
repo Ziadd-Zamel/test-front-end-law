@@ -63,7 +63,7 @@ export const usePermissionNotifications = (token: string | null) => {
 
         // Handle notification action (refresh session and profile)
         await handleNotificationAction(notification, update, session);
-      }
+      },
     );
 
     connection.onclose(() => {});
@@ -77,7 +77,7 @@ export const usePermissionNotifications = (token: string | null) => {
 async function handleNotificationAction(
   notification: PermissionNotification,
   update: any,
-  session: any
+  session: any,
 ) {
   try {
     // First, refresh the access token
