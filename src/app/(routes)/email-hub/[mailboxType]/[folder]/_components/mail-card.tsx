@@ -34,7 +34,7 @@ export default function EmailCard({
     (!message.isRead && type === "junk");
 
   // Check if message is undelivered
-  const isUndelivered = !message.isDelivered;
+  const isUndelivered = !message.isDelivered && isUnread;
 
   // Get sender initials
   const initials = message.senderName?.charAt(0).toUpperCase() || "u";
@@ -116,11 +116,11 @@ export default function EmailCard({
               {isUndelivered && (
                 <Badge
                   variant="outline"
-                  className="h-5 px-2 py-0 border-red-600 bg-red-50 text-red-700 gap-1"
+                  className="h-5 px-1 border-red-600 bg-red-50 text-red-700 gap-1"
                   title="لم يتم التسليم"
                 >
-                  <AlertCircle size={10} />
-                  <span className="text-xs">غير مُسلم</span>
+                  <AlertCircle size={8} />
+                  <span className="text-[10px]">غير مُسلم</span>
                 </Badge>
               )}
 

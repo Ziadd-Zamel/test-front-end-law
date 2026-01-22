@@ -6,6 +6,7 @@ import {
 } from "@/components/common/page-states";
 import MailBody from "./mail-body";
 import MailReplies from "./mail-replies";
+import ReplyForm from "./mail-replay-form";
 
 interface PageProps {
   mailBox: "auto" | "info" | "employeeemail";
@@ -42,19 +43,19 @@ export default async function MessageDetailsPage({
   return (
     <div className="min-h-screen bg-gray-50 box-container py-10">
       {/* Main Email */}
-      <MailBody
-        lastReplyId={mainMessage.id}
-        mailBox={mailBox}
-        mail={mainMessage}
-      />
+      <MailBody mailBox={mailBox} mail={mainMessage} />
 
       {/* Replies Section */}
       {replies.length > 0 && (
         <MailReplies replies={replies} mail={mainMessage} />
       )}
 
-      {/* View History */}
-      {/* {views && views.length > 0 && <MailHistory messages={views} />} */}
+      <ReplyForm
+        originalMessageId={mainMessage.id}
+        refId={mainMessage.refId}
+        refType={mainMessage.refType as "case" | "task"}
+        mailBox={mailBox}
+      />
     </div>
   );
 }

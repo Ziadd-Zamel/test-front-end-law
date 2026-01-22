@@ -1,44 +1,26 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { Card } from "@/components/ui/card";
 import { MailMessageDetails } from "@/lib/api/mail.api";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import ReplyDialog from "./reply-dialog";
 import { formatDate } from "@/lib/utils/format-date";
 import UpdateMessageDialog from "../../_components/update-message-dialog";
-import { useTaskOrCase } from "@/hooks/use-task-or-case";
-import { useMemo } from "react";
-import { Eye, Paperclip } from "lucide-react";
+import { Eye, Paperclip, Reply } from "lucide-react";
 import { MailAttachmentCard } from "./mail-attachment-card";
+import { useQueryState } from "nuqs";
+import { Button } from "@/components/ui/button";
 
 export default function MailBody({
   mail,
   mailBox,
-  lastReplyId,
 }: {
   mail: MailMessageDetails;
   mailBox?: "auto" | "info" | "employeeemail";
-  lastReplyId: string | null;
 }) {
   const getInitials = (name: string) => {
     return name?.charAt(0).toUpperCase() || "U";
   };
-
-  // Fetch data based on refType if it exists
-  const refType = mail.refType as "task" | "case" | undefined;
-  const { data: refData } = useTaskOrCase(refType);
-
-  // Find the selected item and get attachments
-  const availableAttachments = useMemo(() => {
-    if (!refData?.data || !mail.refId) return [];
-
-    const selectedItem = refData.data.find(
-      (item: any) => item.encryptedId === mail.refId,
-    );
-
-    return selectedItem?.attachments || [];
-  }, [refData, mail.refId]);
-
+  const [replay, setReplay] = useQueryState("replay");
   // Check if we should show the update message dialog
   const shouldShowUpdateDialog =
     mailBox === "info" &&
@@ -115,12 +97,20 @@ export default function MailBody({
 
                 {/* Action Buttons - Outlook Style */}
                 {mailBox !== "auto" && (
-                  <ReplyDialog
-                    originalMessageId={lastReplyId || mail.id}
-                    refId={mail.refId}
-                    refType={refType}
-                    availableAttachments={availableAttachments}
-                  />
+                  <Button
+                    onClick={() => {
+                      setReplay("sent");
+                      setTimeout(() => {
+                        document.getElementById("mail-reply")?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                      }, 100);
+                    }}
+                    variant={"ghost"}
+                  >
+                    <Reply className="h-4 w-4" />
+                  </Button>
                 )}
               </div>
 
@@ -170,15 +160,21 @@ export default function MailBody({
                 </div>
 
                 {/* Actions Row */}
-                {mailBox === "info" && (
-                  <div className="flex justify-end">
-                    <ReplyDialog
-                      refId={mail.refId}
-                      refType={refType}
-                      originalMessageId={mail.id}
-                      availableAttachments={availableAttachments}
-                    />
-                  </div>
+                {mailBox !== "auto" && (
+                  <Button
+                    onClick={() => {
+                      setReplay("sent");
+                      setTimeout(() => {
+                        document.getElementById("mail-reply")?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                      }, 100);
+                    }}
+                    variant={"ghost"}
+                  >
+                    <Reply className="h-4 w-4" />
+                  </Button>
                 )}
               </div>
             </div>
