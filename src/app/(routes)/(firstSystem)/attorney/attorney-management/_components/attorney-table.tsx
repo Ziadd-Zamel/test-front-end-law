@@ -22,7 +22,7 @@ const getStatusLabel = (status: Attorney["status"]): string => {
 };
 
 const getBadgeVariant = (
-  status: Attorney["status"]
+  status: Attorney["status"],
 ): "success" | "error" | "warning" | "info" | "neutral" => {
   switch (status) {
     case "approved":
@@ -40,7 +40,6 @@ const getBadgeVariant = (
 };
 
 const requestHeader = [
-  { headName: "رقم الوكالة", className: "text-center" },
   { headName: "اسم العميل", className: "text-center" },
   { headName: "تاريخ الإنشاء", className: "text-center" },
   { headName: "الحالة", className: "text-center" },
@@ -90,7 +89,6 @@ export default function AttorneyTable({
       }
       renderRow={(request) => (
         <TableRow key={request.id}>
-          <TableCell className="text-center">#{request.id}</TableCell>
           <TableCell className="text-center">
             <p className="font-medium">{request.clientName}</p>
           </TableCell>

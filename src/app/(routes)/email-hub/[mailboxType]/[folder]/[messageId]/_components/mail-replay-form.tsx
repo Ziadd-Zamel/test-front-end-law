@@ -213,7 +213,7 @@ export default function ReplyForm({
                 </div>
 
                 <div className="border border-gray-200 rounded-lg bg-gray-50 p-4 max-h-[200px] overflow-y-auto">
-                  {availableAttachments.length === 0 ? (
+                  {availableAttachments?.length === 0 ? (
                     // No attachments available
                     <div className="flex flex-col items-center justify-center py-8 text-center">
                       <File className="h-12 w-12 text-gray-300 mb-3" />
