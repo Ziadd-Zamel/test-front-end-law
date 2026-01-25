@@ -45,17 +45,18 @@ export default async function MessageDetailsPage({
       {/* Main Email */}
       <MailBody mailBox={mailBox} mail={mainMessage} />
 
-      {/* Replies Section */}
-      {replies.length > 0 && (
-        <MailReplies replies={replies} mail={mainMessage} />
-      )}
-
+      {/*Replay Form  */}
       <ReplyForm
         originalMessageId={mainMessage.id}
         refId={mainMessage.refId}
         refType={mainMessage.refType as "case" | "task"}
         mailBox={mailBox}
       />
+
+      {/* Replies Section */}
+      {replies.length > 0 && (
+        <MailReplies replies={replies} mail={mainMessage} />
+      )}
     </div>
   );
 }

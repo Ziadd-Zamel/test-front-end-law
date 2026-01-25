@@ -202,23 +202,6 @@ export default function ReplyForm({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="replyBodyHtml"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="اكتب ردك هنا..."
-                      className="h-32 text-right"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             {/* ATTACHMENTS SECTION */}
             {refType && refId && !isLoading && (
               <div className="space-y-3">
@@ -290,6 +273,23 @@ export default function ReplyForm({
                 </div>
               </div>
             )}
+
+            <FormField
+              control={form.control}
+              name="replyBodyHtml"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="اكتب ردك هنا..."
+                      className="h-32 text-right"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <Button type="submit" className="w-full h-12" disabled={isPending}>
               {isPending ? "جاري الإرسال..." : "إرسال الرد"}

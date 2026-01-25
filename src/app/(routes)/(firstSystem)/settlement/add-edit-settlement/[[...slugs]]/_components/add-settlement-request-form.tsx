@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   AddSettlementRequestFields,
   AddSettlementRequestSchema,
@@ -44,21 +44,37 @@ export default function AddSettlementRequestForm({
   categories: SettlementCategory[];
 }) {
   const router = useRouter();
+  
+  // Track the selected client type (natural person or company)
   const [clientType, setClientType] = useState<
     "client" | "company" | undefined
   >(settlementRequest?.clientType as "client" | "company");
 
+  // Form key used to reset the form after successful submission
+  // Incrementing this key forces React to remount the form component
   const [formKey, setFormKey] = useState(0);
-  // Track number of PDF fields
+  
+  // Track the number of PDF upload fields displayed
+  // If editing existing settlement, start with 0 (existing files shown separately)
+  // If creating new, start with 1 field
   const [pdfCount, setPdfCount] = useState(settlementRequest ? 0 : 1);
+  
+  // Refs to track each PDF field container DOM element
+  // Used to scroll to newly added fields when user clicks "Add File"
+  const pdfFieldRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
-  // Hooks
+  // ==================== CUSTOM HOOKS ====================
+  // Fetch clients or companies based on selected client type
   const { data: ClientData, isPending: ClientsPending } =
     useClientOrCompany(clientType);
+  
+  // Mutation hooks for creating and updating settlement requests
   const { isPending: isCreating, createRequest } = useCreateSettlementRequest();
   const { isPending: isUpdating, updateRequest } = useUpdateSettlementRequest();
 
-  // Form
+  // ==================== FORM CONFIGURATION ====================
+  // Initialize react-hook-form with validation schema and default values
+  // Default values are populated from settlementRequest if editing
   const form = useForm<AddSettlementRequestFields>({
     resolver: zodResolver(AddSettlementRequestSchema),
     defaultValues: {
@@ -76,26 +92,41 @@ export default function AddSettlementRequestForm({
     },
   });
 
+  /**
+   * Handle client type change (natural person vs company)
+   * When client type changes, we need to:
+   * 1. Update the clientType state to trigger data fetching
+   * 2. Update the form field value
+   * 3. Reset the ClientId field since the client list will change
+   */
   const handleClientTypeChange = (value: "client" | "company") => {
     setClientType(value);
     form.setValue("ClientType", value);
     form.resetField("ClientId");
   };
 
+  /**
+   * Handle form submission
+   * Validates all PDF files and converts form data to FormData for API submission
+   */
   async function onSubmit(values: AddSettlementRequestFields) {
-    // Get all PDFs
+    // Get all PDFs from form values
     const allPdfs = values.settlementPdfs || [];
 
+    // Validation 1: For new settlements, at least one PDF is required
     if (allPdfs.length === 0 && !settlementRequest) {
       toast.error("يجب رفع ملف واحد على الأقل");
       return;
     }
 
+    // Validation 2: Check if user added PDF fields but didn't fill them
+    // This happens when pdfCount > allPdfs.length (user clicked "Add File" but didn't upload)
     if (allPdfs.length < pdfCount) {
       toast.error("يوجد ملفات مضافة ولم يتم تعبئة بياناتها");
       return;
     }
 
+    // Validation 3: Check if any PDF is missing required data (file, name, or description)
     const invalidPdfIndex = allPdfs.findIndex(
       (pdf) => !pdf?.file || !pdf.name?.trim() || !pdf.description?.trim()
     );
@@ -105,7 +136,8 @@ export default function AddSettlementRequestForm({
       return;
     }
 
-    // Convert form data to FormData
+    // Convert form data to FormData for multipart/form-data submission
+    // This is required because we're uploading files
     const formData = new FormData();
     formData.append("CategoryId", values.CategoryId);
     formData.append("ClientType", values.ClientType);
@@ -115,7 +147,8 @@ export default function AddSettlementRequestForm({
     formData.append("OpponentIdNumber", values.OpponentIdNumber);
     formData.append("DisputeSummary", values.DisputeSummary);
 
-    // Append all valid PDFs
+    // Append all valid PDF files with their metadata
+    // Each PDF needs: file, description, and original filename
     allPdfs.forEach((pdf, index) => {
       if (pdf?.file) {
         formData.append(`Attachments[${index}]`, pdf.file);
@@ -124,8 +157,9 @@ export default function AddSettlementRequestForm({
       }
     });
 
+    // Determine if we're updating existing settlement or creating new one
     if (settlementRequest) {
-      // Update existing request
+      // Update existing request - include the settlement ID
       formData.append("Id", settlementRequest.id.toString());
       updateRequest({ formData, setFormKey });
     } else {
@@ -134,6 +168,7 @@ export default function AddSettlementRequestForm({
     }
   }
 
+  // Combined loading state for both create and update operations
   const isSubmitting = isCreating || isUpdating;
 
   return (
@@ -313,13 +348,31 @@ export default function AddSettlementRequestForm({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setPdfCount(pdfCount + 1)}
+              onClick={() => {
+                // Increment PDF field count to add a new upload field
+                const newCount = pdfCount + 1;
+                setPdfCount(newCount);
+                
+                // Scroll to the newly added field after DOM update
+                // setTimeout ensures the DOM has rendered the new field before scrolling
+                // The new field index is newCount - 1 (0-indexed)
+                setTimeout(() => {
+                  const newFieldIndex = newCount - 1;
+                  const fieldElement = pdfFieldRefs.current[newFieldIndex];
+                  if (fieldElement) {
+                    // Smooth scroll to bring the new field into view
+                    fieldElement.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }, 100);
+              }}
               className="flex items-center gap-2"
             >
               <Plus className="size-4" />
               إضافة ملف
             </Button>
           </div>
+          {/* Display existing PDF attachments when editing a settlement */}
+          {/* These are read-only cards showing files already uploaded */}
           {settlementRequest && (
             <div className="space-y-2">
               {settlementRequest.attachments.map((attachment) => {
@@ -327,20 +380,30 @@ export default function AddSettlementRequestForm({
               })}
             </div>
           )}
+          {/* Render dynamic PDF upload fields based on pdfCount */}
           {Array.from({ length: pdfCount }).map((_, index) => (
             <div
               key={index}
+              // Store ref to this field's DOM element for scrolling
+              ref={(el) => {
+                pdfFieldRefs.current[index] = el;
+              }}
               className="space-y-4 p-4 border rounded-lg relative"
             >
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold">ملف رقم {index + 1}</h3>
+                {/* Only show delete button if there's more than one field */}
                 {pdfCount > 1 && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => {
+                      // Decrement PDF count to remove this field
                       setPdfCount(pdfCount - 1);
+                      
+                      // Remove the PDF data from form state at this index
+                      // This ensures form data stays in sync with visible fields
                       const current = form.getValues("settlementPdfs") || [];
                       const updated = current.filter((_, i) => i !== index);
                       form.setValue("settlementPdfs", updated);

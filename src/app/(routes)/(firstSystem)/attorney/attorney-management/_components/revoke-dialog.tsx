@@ -60,10 +60,18 @@ export default function RevokeDialog({
 
   const { isPending, revokeAttorney } = useChangeStatuAttorney();
   const handleSubmit = (values: RevokeReasonFields) => {
-    revokeAttorney({
-      attorneyId,
-      reason: values.reason || "",
-    });
+    revokeAttorney(
+      {
+        attorneyId,
+        reason: values.reason || "",
+      },
+      {
+        onSuccess: () => {
+          setOpen(false);
+          form.reset();
+        },
+      },
+    );
   };
 
   const handleCancel = () => {
