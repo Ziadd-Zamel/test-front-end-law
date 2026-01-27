@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { useChangeStatuAttorney } from "../../_hooks/use-attorney";
+import { CustomTooltip } from "@/components/common/custom-tooltip";
 
 // Schema for revoke reason validation
 const RevokeReasonSchema = z.object({
@@ -81,16 +82,18 @@ export default function RevokeDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-red-600 hover:text-red-700  hover:bg-red-50"
-          disabled={isPending || !disabled}
-        >
-          <FaRegTrashCan className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
+      <CustomTooltip content=" إلغاء الوكالة">
+        <DialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-red-600 hover:text-red-700  hover:bg-red-50"
+            disabled={isPending || !disabled}
+          >
+            <FaRegTrashCan className="h-4 w-4" />
+          </Button>
+        </DialogTrigger>
+      </CustomTooltip>
       <DialogContent className="sm:max-w-md text-start pt-12">
         <DialogHeader className="sr-only">
           <div className="flex items-center gap-2">

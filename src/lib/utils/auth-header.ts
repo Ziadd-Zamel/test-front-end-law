@@ -30,5 +30,6 @@ export async function getAuthHeader(): Promise<{ token: string }> {
   if (!accessToken) {
     throw new Error("No access token found in JWT");
   }
+  console.log(accessToken);
   return { token: accessToken };
 }

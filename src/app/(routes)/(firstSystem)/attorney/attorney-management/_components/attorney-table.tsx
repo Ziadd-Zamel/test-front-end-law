@@ -104,7 +104,10 @@ export default function AttorneyTable({
           </TableCell>
           <TableCell className="text-center">
             <div className="flex items-center justify-center gap-2">
-              <LinkButton href={`/attorney/attorney-management/${request.id}`}>
+              <LinkButton
+                title="عرض التفاصيل"
+                href={`/attorney/attorney-management/${request.id}`}
+              >
                 <Eye className="h-4 w-4" />
               </LinkButton>
               <RevokeDialog

@@ -1,5 +1,7 @@
+import { Size } from "recharts/types/util/types";
 import { APIResponse } from "../types/api";
 import { getAuthHeader } from "../utils/auth-header";
+import { buildQueryParams } from "../utils/build-query-params";
 
 // Mail message types
 export interface MailMessage {
@@ -80,6 +82,8 @@ export interface MailAttachment {
   relativePath: string;
   contentType: string;
   downloadUrl: string | null;
+  createdBy: Size;
+  size: string;
 }
 
 export interface MailDetailsResponse {
@@ -118,36 +122,40 @@ export const getMailMessages = async (
 export const getMessageDetails = async (
   messageId: string,
   mailBox: "auto" | "info" | "employeeemail",
-  employeeId?: number,
+  folder: "inbox" | "sent" | "junk",
 ): Promise<APIResponse<MailDetailsResponse>> => {
-  const baseUrl = `${process.env.MAIL_API}/Mail/Get-Message-Details`;
-  const params = new URLSearchParams();
+  // get Token
+  const { token } = await getAuthHeader();
+
+  // Decode messageId (handle double encoding)
   let decodedId = decodeURIComponent(messageId);
   if (decodedId.includes("%")) {
     decodedId = decodeURIComponent(decodedId);
   }
-  params.append("messageId", decodedId);
-  params.append("mailBox", mailBox);
 
-  if (employeeId) {
-    params.append("employeeId", employeeId.toString());
-  }
-
-  const url = `${baseUrl}?${params.toString()}`;
-
-  const { token } = await getAuthHeader();
-
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    cache: "no-store",
-    next: { tags: ["mail-details"] },
+  // Build query params
+  const queryString = buildQueryParams({
+    messageId: decodedId,
+    mailBox: mailBox,
+    folder: folder,
   });
+
+  const response = await fetch(
+    `${process.env.MAIL_API}/Mail/Get-Message-Details?${queryString}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+      next: { tags: ["mail-details"] },
+    },
+  );
+
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
+
   const payload: APIResponse<MailDetailsResponse> = await response.json();
 
   return payload;

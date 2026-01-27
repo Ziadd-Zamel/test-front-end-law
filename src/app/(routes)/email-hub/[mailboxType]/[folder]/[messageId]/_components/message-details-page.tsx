@@ -10,19 +10,19 @@ import ReplyForm from "./mail-replay-form";
 
 interface PageProps {
   mailBox: "auto" | "info" | "employeeemail";
-  folder: string;
+  folder: "inbox" | "sent" | "junk";
   employeeId: number;
   messageId: string;
 }
 
 export default async function MessageDetailsPage({
-  employeeId,
   mailBox,
   messageId,
+  folder,
 }: PageProps) {
   // Fetching
   const [payload, error] = await catchError(() =>
-    getMessageDetails(messageId, mailBox, employeeId),
+    getMessageDetails(messageId, mailBox, folder),
   );
   // Handle error state
   if (error) {

@@ -48,6 +48,7 @@ const routeNameMap: { [key: string]: { name: string; link: boolean } } = {
   // settings
   "/settings": { name: "الأعدادات", link: true },
   "/settings/permissions": { name: "الصلاحيات", link: true },
+  "/settings/attachment-category": { name: "تصنيفات الفئات", link: true },
 
   // Dynamic routes
   "/attorney/my-attorneies/[attorneyId]": {
@@ -128,7 +129,7 @@ export default function CustomBreadcrumb({
         className={cn(
           black
             ? "text-black hover:text-black/50"
-            : "text-blue-700 hover:text-blue-700/50"
+            : "text-blue-700 hover:text-blue-700/50",
         )}
       >
         {/* Home item */}
@@ -148,7 +149,7 @@ export default function CustomBreadcrumb({
         {pathSegments.map((segment, index) => {
           const href = "/" + pathSegments.slice(0, index + 1).join("/");
           const normalizedHref = normalizePath(
-            pathSegments.slice(0, index + 1)
+            pathSegments.slice(0, index + 1),
           );
           const isLast = index === pathSegments.length - 1;
 

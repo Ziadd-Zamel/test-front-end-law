@@ -23,7 +23,7 @@ interface NavItem {
  * @returns Array of navigation items
  */
 export function getNavItems(
-  userPermissions: Array<{ id: number; name: string }>
+  userPermissions: Array<{ id: number; name: string }>,
 ): NavItem[] {
   const navItems: NavItem[] = [
     {
@@ -196,6 +196,10 @@ export function getNavItems(
         {
           title: "الصلاحيات",
           url: "/settings/permissions",
+        },
+        {
+          title: "تصنيفات الملفات",
+          url: "/settings/attachment-category",
         },
       ],
     },

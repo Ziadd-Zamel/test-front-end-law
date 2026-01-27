@@ -2,17 +2,20 @@
 import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Button, ButtonProps } from "@/components/ui/button";
+import { CustomTooltip } from "./custom-tooltip";
 
 interface LinkButtonProps extends ButtonProps {
   href: string;
   children: ReactNode;
   openInNewTab?: boolean;
+  title?: string;
 }
 
 export default function LinkButton({
   href,
   children,
   openInNewTab = false,
+  title,
   ...props
 }: LinkButtonProps) {
   const router = useRouter();
@@ -29,8 +32,10 @@ export default function LinkButton({
   };
 
   return (
-    <Button variant={"ghost"} onClick={handleClick} {...props}>
-      {children}
-    </Button>
+    <CustomTooltip content={title || "no title"}>
+      <Button variant={"ghost"} onClick={handleClick} {...props}>
+        {children}
+      </Button>
+    </CustomTooltip>
   );
 }

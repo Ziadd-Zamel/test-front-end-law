@@ -12,7 +12,7 @@ import LinkButton from "@/components/common/link-button";
 import ClientsFilter from "@/components/common/clients-filter";
 
 const getBadgeVariant = (
-  status: UserAttorney["attorneyStatus"]
+  status: UserAttorney["attorneyStatus"],
 ): "success" | "error" | "warning" | "info" | "neutral" => {
   switch (status) {
     case "معتمدة":
@@ -114,9 +114,13 @@ export default function AttorneyTable({
           </TableCell>
           <TableCell className="text-center">
             <div className="flex items-center justify-center gap-2">
-              <LinkButton href={`/attorney/my-attorneies/${request.id}`}>
+              <LinkButton
+                title="عرض التفاصيل"
+                href={`/attorney/my-attorneies/${request.id}`}
+              >
                 <Eye className="h-4 w-4" />
               </LinkButton>
+
               <RevokeButton
                 attorneyNumber={request.attorneyNumber.toString()}
               />

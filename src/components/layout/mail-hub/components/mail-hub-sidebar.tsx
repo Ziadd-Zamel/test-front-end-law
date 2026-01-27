@@ -7,6 +7,8 @@ import {
   Send,
   Trash2,
   Search,
+  FileDown,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -31,26 +33,39 @@ const getFolderIcon = (url: string): LucideIcon => {
   if (url.includes("/junk")) return Trash2;
   if (url.includes("/search")) return Search;
   if (url.includes("/send")) return Send;
+  if (url.includes("export")) return FileDown;
+  if (url.includes("scheduled")) return Clock;
   return Mail;
 };
 
 // Mail Hub specific navigation - completely flat structure
 const mailHubLinks = [
+  //Info
   { title: "صندوق الوارد", url: "/email-hub/Info/inbox" },
   { title: "المرسل", url: "/email-hub/Info/sent" },
   { title: "البريد المزعج", url: "/email-hub/Info/junk" },
   { title: "البحث", url: "/email-hub/Info/search" },
   { title: "ارسل البريد", url: "/email-hub/Info/send" },
+  { title: "خيارات التصدير", url: "/email-hub/Info/export" },
+  { title: "الرسائل المجدولة", url: "/email-hub/Info/scheduled" },
+
+  //Auto
   { title: "صندوق الوارد", url: "/email-hub/Auto/inbox" },
   { title: "المرسل", url: "/email-hub/Auto/sent" },
   { title: "البريد المزعج", url: "/email-hub/Auto/junk" },
   { title: "البحث", url: "/email-hub/Auto/search" },
   { title: "ارسل البريد", url: "/email-hub/Auto/send" },
+  { title: "خيارات التصدير", url: "/email-hub/Auto/export" },
+  { title: "الرسائل المجدولة", url: "/email-hub/Auto/scheduled" },
+
+  //Employee
   { title: "صندوق الوارد", url: "/email-hub/Employee/inbox" },
   { title: "المرسل", url: "/email-hub/Employee/sent" },
   { title: "البريد المزعج", url: "/email-hub/Employee/junk" },
   { title: "البحث", url: "/email-hub/Employee/search" },
   { title: "ارسل البريد", url: "/email-hub/Employee/send" },
+  { title: "خيارات التصدير", url: "/email-hub/Employee/export" },
+  { title: "الرسائل المجدولة", url: "/email-hub/Employee/scheduled" },
 ];
 
 export function MailHubSidebar({

@@ -59,10 +59,8 @@ export default function PdfUploader({
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      if (file.type === "application/pdf") {
-        setSelectedFile(file);
-        updateParent(file, fileName, fileDescription);
-      }
+      setSelectedFile(file);
+      updateParent(file, fileName, fileDescription);
     }
   };
 
