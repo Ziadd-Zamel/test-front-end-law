@@ -13,7 +13,7 @@ import ClientsFilter from "@/components/common/clients-filter";
 
 // Map Arabic statuses to generic badge variants
 const getBadgeVariant = (
-  status: UserAttorney["attorneyStatus"]
+  status: UserAttorney["attorneyStatus"],
 ): "success" | "error" | "warning" | "info" | "neutral" => {
   switch (status) {
     case "معتمدة":
@@ -55,7 +55,6 @@ export default function AttorneyTable({
 }) {
   return (
     <TableBuilder<AllAttorney>
-      hasFooter={true}
       pagination={
         responsePagination && responsePagination.totalCount > 5
           ? pagination

@@ -18,18 +18,21 @@ type TableBuilderProps<T> = {
   tableHeader: React.ReactNode;
   tableHeadNames: Header[];
   tableData: T[];
-  hasFooter?: boolean;
+
   renderRow: (_item: T, _index: number) => React.ReactNode;
   renderExtraRow?: () => React.ReactNode;
+
   headRowClasses?: string;
   tableHeadClassName?: string;
-  emptyState?: React.ReactNode; // New prop for custom empty state
+  emptyState?: React.ReactNode;
+
   pagination?: {
     currentPage: number;
     limit: number;
   };
   totalPages?: number;
-  totalItems?: number;
+
+  selectAllHeader?: React.ReactNode;
 };
 
 export function TableBuilder<T>({
@@ -43,20 +46,29 @@ export function TableBuilder<T>({
   emptyState,
   pagination,
   totalPages,
+  selectAllHeader,
 }: TableBuilderProps<T>) {
+  const columnCount = tableHeadNames.length + (selectAllHeader ? 1 : 0);
+
   return (
-    <div className="rounded-sm bg-white border-1 border-gray-300">
+    <div className="rounded-sm bg-white border border-gray-300">
       {tableHeader && (
         <div className="flex items-center font-semibold justify-between px-6 py-5">
           {tableHeader}
         </div>
       )}
+
       <Table>
-        {/* Table header and render passed header */}
         <TableHeader
-          className={cn("bg-blue-50 hover:bg-blue-100", tableHeadClassName)}
+          className={cn("bg-gray-100 hover:bg-gray-100 ", tableHeadClassName)}
         >
           <TableRow className={cn(headRowClasses)}>
+            {selectAllHeader && (
+              <TableHead className="w-[40px] text-center">
+                {selectAllHeader}
+              </TableHead>
+            )}
+
             {tableHeadNames.map((col, i) => (
               <TableHead key={i} className={col.className}>
                 {col.headName}
@@ -66,11 +78,10 @@ export function TableBuilder<T>({
         </TableHeader>
 
         <TableBody>
-          {/* Show empty state if no data */}
           {tableData.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={tableHeadNames.length}
+                colSpan={columnCount}
                 className="h-[300px] text-center"
               >
                 {emptyState || (
@@ -87,23 +98,21 @@ export function TableBuilder<T>({
             </TableRow>
           ) : (
             <>
-              {/* Render dynamic data no matter the structure */}
               {tableData.map((item, index) => renderRow(item, index))}
-
-              {/* Render the create new Entry in the table */}
               {renderExtraRow && renderExtraRow()}
             </>
           )}
         </TableBody>
       </Table>
-      <div className="flex justify-center items-center w-full">
-        {pagination && (
+
+      {pagination && (
+        <div className="flex justify-center items-center w-full">
           <TablePagination
             pagination={pagination}
             totalPages={totalPages || 1}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 // ==================== HELPERS ====================
 
 const getBadgeVariant = (
-  status: Settlement["status"]
+  status: Settlement["status"],
 ): "success" | "error" | "warning" | "info" | "neutral" => {
   switch (status) {
     case "تم الصلح":
@@ -47,7 +47,6 @@ export default function SettlementTable({
   const router = useRouter();
   return (
     <TableBuilder<Settlement>
-      hasFooter
       pagination={
         responsePagination && responsePagination.totalCount > 5
           ? pagination

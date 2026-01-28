@@ -60,7 +60,6 @@ export default function AttorneyTable({
 }) {
   return (
     <TableBuilder<Attorney>
-      hasFooter={true}
       pagination={
         responsePagination && responsePagination.totalCount > 5
           ? pagination

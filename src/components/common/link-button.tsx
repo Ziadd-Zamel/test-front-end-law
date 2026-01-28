@@ -31,11 +31,15 @@ export default function LinkButton({
     }
   };
 
-  return (
-    <CustomTooltip content={title || "no title"}>
-      <Button variant={"ghost"} onClick={handleClick} {...props}>
-        {children}
-      </Button>
-    </CustomTooltip>
+  const buttonElement = (
+    <Button variant={"ghost"} onClick={handleClick} {...props}>
+      {children}
+    </Button>
   );
+
+  if (!title) {
+    return buttonElement;
+  }
+
+  return <CustomTooltip content={title}>{buttonElement}</CustomTooltip>;
 }

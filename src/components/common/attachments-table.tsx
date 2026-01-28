@@ -1,147 +1,150 @@
-/* eslint-disable jsx-a11y/alt-text */
 "use client";
 
-import { TableBuilder } from "./table-builder";
-import { TableRow, TableCell } from "@/components/ui/table";
+import * as React from "react";
+import { TableBuilder } from "@/components/common/table-builder";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { TableEmptyState } from "@/components/common/table-states";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, Image, FileSpreadsheet, File } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
+import AttachmentDetailsDialog from "./attachments-dialog";
 import { useGenerateFile } from "@/hooks/mutation/use-generate-file";
+import { CustomTooltip } from "./custom-tooltip";
 
-export interface MailAttachment {
-  attechmentId: string;
-  originalName: string;
-  relativePath: string;
-  contentType: string;
-  downloadUrl: string | null;
-  createdBy: string;
-  size: string;
+const tableHeaders = [
+  { headName: "اسم الملف", className: "text-center" },
+  { headName: "التصنيف", className: "text-center w-[200px]" },
+  { headName: "تم الرفع بواسطة", className: "text-center w-[250px]" },
+  { headName: "الحجم", className: "text-center w-[50px]" },
+  { headName: "الإجراءات", className: "text-center w-[50px]" },
+];
+
+function formatFileSize(size: number) {
+  if (!size) return "-";
+  const kb = size / 1024;
+  const mb = kb / 1024;
+
+  if (mb >= 1) return `${mb.toFixed(2)} MB`;
+  return `${kb.toFixed(2)} KB`;
 }
 
-interface AttachmentsTableProps {
-  attachments: MailAttachment[];
-  title?: string;
-}
+type AttachmentsTableProps = {
+  attachments: MainAttachment[];
+  selectedItems?: MainAttachment[];
+  onSelectionChange?: (selected: MainAttachment[]) => void;
+};
 
-export function AttachmentsTable({
+export default function AttachmentsTable({
   attachments,
-  title,
+  selectedItems,
+  onSelectionChange,
 }: AttachmentsTableProps) {
-  const { generateFile, isPending } = useGenerateFile();
+  const { generateFile } = useGenerateFile();
+  const [downloadingId, setDownloadingId] = React.useState<string | null>(null);
 
-  // Get appropriate icon based on file type
-  const getFileIcon = (contentType: string, fileName: string) => {
-    const ext = fileName.split(".").pop()?.toLowerCase();
+  const allSelected =
+    selectedItems?.length === attachments.length && attachments.length > 0;
 
-    if (
-      contentType.startsWith("image/") ||
-      ["png", "jpg", "jpeg", "gif", "webp"].includes(ext || "")
-    ) {
-      return <Image className="w-5 h-5 text-blue-500" />;
+  const toggleSelectAll = () => {
+    if (!onSelectionChange) return;
+    if (allSelected) {
+      onSelectionChange([]);
+    } else {
+      onSelectionChange(attachments);
     }
-    if (
-      ["xlsx", "xls", "csv"].includes(ext || "") ||
-      contentType.includes("spreadsheet")
-    ) {
-      return <FileSpreadsheet className="w-5 h-5 text-green-500" />;
-    }
-    if (contentType === "application/pdf" || ext === "pdf") {
-      return <FileText className="w-5 h-5 text-red-500" />;
-    }
-    return <File className="w-5 h-5 text-gray-500" />;
   };
 
-  // Format file size
-  const formatSize = (size: string) => {
-    const bytes = parseFloat(size);
-    if (isNaN(bytes)) return size;
+  const toggleRow = (attachment: MainAttachment) => {
+    if (!onSelectionChange) return;
+    if (!selectedItems) return;
 
-    if (bytes < 1024) return `${bytes} بايت`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} كيلوبايت`;
-    if (bytes < 1024 * 1024 * 1024)
-      return `${(bytes / (1024 * 1024)).toFixed(1)} ميجابايت`;
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} جيجابايت`;
+    if (selectedItems.some((item) => item.id === attachment.id)) {
+      onSelectionChange(
+        selectedItems.filter((item) => item.id !== attachment.id),
+      );
+    } else {
+      onSelectionChange([...selectedItems, attachment]);
+    }
   };
 
-  const handleDownload = (attachment: MailAttachment) => {
-    generateFile({
-      filepath: attachment.relativePath,
-      contentType: attachment.contentType,
-      name: attachment.originalName,
-    });
+  const handleDownload = (file: MainAttachment) => {
+    setDownloadingId(file.id);
+    generateFile(
+      {
+        filepath: file.relativePath,
+        name: file.originalName,
+      },
+      {
+        onSettled: () => {
+          setDownloadingId(null);
+        },
+      },
+    );
   };
-
-  const tableHeadNames = [
-    { headName: "نوع الملف", className: "text-right" },
-    { headName: "اسم الملف", className: "text-right" },
-    { headName: "الحجم", className: "text-right" },
-    { headName: "أنشأ بواسطة", className: "text-right" },
-    { headName: "الإجراءات", className: "text-center w-[120px]" },
-  ];
-
-  const renderRow = (attachment: MailAttachment) => (
-    <TableRow key={attachment.attechmentId} className="hover:bg-gray-50">
-      <TableCell className="text-right">
-        <div className="flex items-center justify-end gap-2">
-          {getFileIcon(attachment.contentType, attachment.originalName)}
-        </div>
-      </TableCell>
-
-      <TableCell className="text-right">
-        <span className="font-medium text-gray-900">
-          {attachment.originalName}
-        </span>
-      </TableCell>
-
-      <TableCell className="text-right">
-        <span className="text-sm text-gray-600">
-          {formatSize(attachment.size)}
-        </span>
-      </TableCell>
-
-      <TableCell className="text-right">
-        <span className="text-sm text-gray-600">{attachment.createdBy}</span>
-      </TableCell>
-
-      <TableCell className="text-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleDownload(attachment)}
-          disabled={isPending}
-          className="hover:bg-blue-50"
-        >
-          <Download className="w-4 h-4 ml-2" />
-          تحميل
-        </Button>
-      </TableCell>
-    </TableRow>
-  );
-
-  const emptyState = (
-    <div className="flex flex-col items-center justify-center py-12">
-      <File className="w-16 h-16 text-gray-300 mb-4" />
-      <p className="text-lg font-medium text-gray-900">لا توجد مرفقات</p>
-      <p className="text-sm text-gray-500 mt-1">لم يتم إرفاق أي ملفات</p>
-    </div>
-  );
 
   return (
-    <TableBuilder
-      tableHeader={
-        <div className="flex items-center justify-between w-full">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {title || "المرفقات"}
-          </h3>
-          <span className="text-sm text-gray-500">
-            {attachments.length} {attachments.length === 1 ? "ملف" : "ملفات"}
-          </span>
-        </div>
-      }
-      tableHeadNames={tableHeadNames}
+    <TableBuilder<MainAttachment>
+      tableHeader={<></>}
+      tableHeadNames={tableHeaders}
       tableData={attachments}
-      renderRow={renderRow}
-      emptyState={emptyState}
-      headRowClasses="text-right"
+      headRowClasses="text-center"
+      emptyState={
+        <TableEmptyState
+          title="لا توجد مرفقات"
+          description="لم يتم إضافة أي مرفقات بعد"
+          className="h-fit"
+        />
+      }
+      selectAllHeader={
+        onSelectionChange ? (
+          <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} />
+        ) : undefined
+      }
+      renderRow={(file) => (
+        <TableRow key={file.id}>
+          {onSelectionChange && selectedItems && (
+            <TableCell className="text-center w-[70px]">
+              <Checkbox
+                checked={selectedItems.some((item) => item.id === file.id)}
+                onCheckedChange={() => toggleRow(file)}
+              />
+            </TableCell>
+          )}
+
+          <TableCell className="text-center font-medium">
+            {file.originalName}
+          </TableCell>
+
+          <TableCell className="text-center">
+            {file.categoryName || "لا يوجد تصنيف"}
+          </TableCell>
+          <TableCell className="text-center ">
+            {file.uploadedByName || "غير معروف"}
+          </TableCell>
+          <TableCell className="text-center">
+            {formatFileSize(file.size)}
+          </TableCell>
+
+          <TableCell className="text-center">
+            <CustomTooltip content="تحميل الملف">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDownload(file)}
+                disabled={downloadingId === file.id}
+                className="h-8 w-8"
+              >
+                {downloadingId === file.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+              </Button>
+            </CustomTooltip>
+            <AttachmentDetailsDialog file={file} />
+          </TableCell>
+        </TableRow>
+      )}
     />
   );
 }

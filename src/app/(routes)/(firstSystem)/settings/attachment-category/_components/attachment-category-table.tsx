@@ -37,7 +37,6 @@ export default function AttachmentCategoriesTable({
 
   return (
     <TableBuilder<AttachmentCategory>
-      hasFooter={true}
       pagination={
         responsePagination && responsePagination.totalCount > 5
           ? pagination

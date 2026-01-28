@@ -18,7 +18,7 @@ export async function GET() {
     if (!response.ok) {
       return NextResponse.json(
         { error: "Failed to fetch cases" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -28,7 +28,7 @@ export async function GET() {
     console.error("Error fetching cases:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

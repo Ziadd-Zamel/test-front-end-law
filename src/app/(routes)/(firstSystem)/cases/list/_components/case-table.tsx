@@ -42,7 +42,6 @@ export default async function CasesTable({
   const permission = await hasPermission("تعديل القضايا المغلقة");
   return (
     <TableBuilder<Case>
-      hasFooter={true}
       pagination={
         responsePagination && responsePagination.totalCount > 4
           ? pagination
@@ -105,14 +104,14 @@ export default async function CasesTable({
             <Badge
               variant={getCaseStatusBadge(
                 caseItem.isArchived,
-                caseItem.isActive
+                caseItem.isActive,
               )}
             >
               {caseItem.isArchived === 1
                 ? "مغلقة"
                 : caseItem.isActive === 1
-                ? "نشطة"
-                : "غير نشطة"}
+                  ? "نشطة"
+                  : "غير نشطة"}
             </Badge>
           </TableCell>
 

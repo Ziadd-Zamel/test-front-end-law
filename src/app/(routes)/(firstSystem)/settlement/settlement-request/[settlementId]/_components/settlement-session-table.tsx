@@ -12,7 +12,7 @@ import { ExportButton } from "@/components/common/export-button";
 // ==================== HELPERS ====================
 
 const getBadgeVariant = (
-  status: SettlementSession["sessionStatus"]
+  status: SettlementSession["sessionStatus"],
 ): "success" | "error" | "warning" | "info" | "neutral" => {
   switch (status) {
     case "تم الصلح":
@@ -37,7 +37,6 @@ export default function SettlementSessionsTable({
 }) {
   return (
     <TableBuilder<SettlementSession>
-      hasFooter
       tableHeader={
         <div className="flex items-center justify-between w-full md:flex-row flex-col gap-6">
           <div className="flex self-start items-center gap-2">

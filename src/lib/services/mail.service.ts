@@ -6,7 +6,8 @@ import { getAuthHeader } from "../utils/auth-header";
 export interface replayMailBody {
   originalMessageId: string;
   replyBodyHtml: string;
-  attachments?: Attachment[];
+  attachments?: MainAttachment[];
+  ccClientContactIds?: string[];
 }
 
 export interface sendEmployeeMailBody {
@@ -32,7 +33,8 @@ export interface sendMailBody {
   bodyHtml: string;
   refType: string;
   refId: string;
-  attachments?: Attachment[];
+  attachments?: MainAttachment[];
+  ccClientContactIds?: string[];
 }
 
 export interface searchMailBody {
@@ -48,25 +50,43 @@ export interface searchMailBody {
 // send mail
 export async function sendMailService({ body }: { body: sendMailBody }) {
   const token = await getAuthHeader();
-  console.log(body);
+
+  const transformedBody = {
+    subject: body.subject,
+    bodyHtml: body.bodyHtml,
+    refType: body.refType,
+    refId: body.refId,
+    isAttachmentCheckRequired: 1,
+    ...(body.ccClientContactIds &&
+      body.ccClientContactIds?.length > 0 && {
+        ccClientContactIds: body.ccClientContactIds,
+      }),
+    ...(body.attachments &&
+      body.attachments.length > 0 && {
+        attachments: body.attachments.map((attachment) => ({
+          attechmentId: attachment.id,
+          originalName: attachment.originalName,
+          relativePath: attachment.relativePath,
+        })),
+      }),
+  };
+
   const response = await fetch(`${process.env.MAIL_API}/Mail/Sent`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token.token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
+
+    body: JSON.stringify(transformedBody),
   });
-
   const result = await response.json();
-
   if (!response.ok) {
     return { message: result.message, success: false };
   }
 
   return result;
 }
-
 // Send Mail to employee
 export async function sendEmployeeMailService({
   body,
@@ -83,7 +103,7 @@ export async function sendEmployeeMailService({
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    }
+    },
   );
   const result = await response.json();
 
@@ -111,7 +131,7 @@ export async function sendAutoMailService({
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    }
+    },
   );
 
   const result = await response.json();
@@ -127,15 +147,35 @@ export async function sendAutoMailService({
 export async function replayMailService({ body }: { body: replayMailBody }) {
   const token = await getAuthHeader();
 
+  const transformedBody = {
+    originalMessageId: body.originalMessageId,
+    replyBodyHtml: body.replyBodyHtml,
+    ...(body.ccClientContactIds &&
+      body.ccClientContactIds?.length > 0 && {
+        ccClientContactIds: body.ccClientContactIds,
+      }),
+    ...(body.attachments &&
+      body.attachments.length > 0 && {
+        attachments: body.attachments.map((attachment) => ({
+          attechmentId: attachment.id,
+          originalName: attachment.originalName,
+          relativePath: attachment.relativePath,
+        })),
+      }),
+  };
   const response = await fetch(`${process.env.MAIL_API}/Mail/Reply`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token.token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(transformedBody),
   });
+
+  console.log("response", response);
+
   const result = await response.json();
+  console.log("result", result);
 
   if (!response.ok) {
     return { message: result.message, success: false };
@@ -173,7 +213,7 @@ export async function searchMailService({
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    }
+    },
   );
 
   const result = await response.json();
@@ -197,7 +237,7 @@ export async function logMailReadService(mailId: string) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token.token}`,
       },
-    }
+    },
   );
 
   const result = await response.json();
@@ -221,7 +261,7 @@ export async function updateMessageService(body: updateMessageBody) {
         Authorization: `Bearer ${token.token}`,
       },
       body: JSON.stringify(body),
-    }
+    },
   );
 
   const result = await response.json();

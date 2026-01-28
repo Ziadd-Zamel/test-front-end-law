@@ -32,7 +32,6 @@ export default function CategoriesTable({
 }) {
   return (
     <TableBuilder<SettlementCategory>
-      hasFooter
       tableHeader={
         <div className="flex items-center justify-between w-full md:flex-row flex-col gap-6">
           <div className="flex self-start items-center gap-2">
