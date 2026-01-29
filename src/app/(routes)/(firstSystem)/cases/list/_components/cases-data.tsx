@@ -12,7 +12,7 @@ export default async function CasesData({
 }) {
   // fetching Cases
   const [payload, error] = await catchError(() =>
-    GetAllCases({ pageSize: mainLimit, PageNumber: mainPage })
+    GetAllCases({ pageSize: mainLimit, pageNumber: mainPage }),
   );
   if (error) {
     return (

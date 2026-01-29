@@ -1,163 +1,210 @@
+"use server";
+
+import { getAuthHeader } from "@/lib/utils/auth-header";
 import { APIResponse } from "@/lib/types/api";
-import { getAuthHeader } from "../utils/auth-header";
 import { buildQueryParams } from "../utils/build-query-params";
 
-// -----------------------------
-// Get All Cases
-// -----------------------------
-interface QueryParams {
+// ==================== INTERFACES ====================
+
+export interface SettlementListQueryParams {
+  PageNumber?: number;
+  pageSize?: number;
+  status?: string;
+  categoryNumber?: string;
+}
+
+export interface SettlementCategoryListQueryParams {
   pageNumber?: number;
   pageSize?: number;
+  onlyActive?: boolean;
 }
 
-export async function GetAllCases(params: QueryParams = {}) {
-  // Get auth token
-  const { token } = await getAuthHeader();
+/**
+ * Get all settlement requests
+ */
+export async function getAllSettlement(params: SettlementListQueryParams = {}) {
+  const token = await getAuthHeader();
 
-  // Base API URL
-  const baseUrl = `${process.env.API}/Case/List-All-Cases`;
-
-  // Build query parameters
   const queryString = buildQueryParams(params);
 
-  // Final request URL
-  const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  const url = `${process.env.API}/SettlementRequest/list${
+    queryString ? `?${queryString}` : ""
+  }`;
 
-  // Send request
   const response = await fetch(url, {
     method: "GET",
     headers: {
       Accept: "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token.token}`,
     },
-    next: { revalidate: 360, tags: ["all-cases"] },
+    next: { revalidate: 360, tags: ["all-settlement"] },
   });
 
-  // Handle HTTP errors
+  const result: APIResponse<Settlement[]> = await response.json();
+
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    throw new Error(result?.message || "Failed to fetch settlements");
   }
 
-  // Parse response payload
-  const data: APIResponse<Case[]> = await response.json();
-  return data;
+  return result;
 }
 
-// -----------------------------
-// Validate Case ID
-// -----------------------------
-const VALID_ID_REGEX = /^[a-zA-Z0-9-]+$/;
-export const isValidCaseId = (id: string) => VALID_ID_REGEX.test(id);
+/**
+ * Get settlement request details by id
+ */
+export async function getSettlementById(id: string) {
+  const token = await getAuthHeader();
 
-// -----------------------------
-// Get Case By ID
-// -----------------------------
-export async function GetCaseById(id: string) {
-  // Get auth token
-  const { token } = await getAuthHeader();
+  const url = `${
+    process.env.API
+  }/SettlementRequest/get-settlement-request-details?id=${encodeURIComponent(
+    id,
+  )}`;
 
-  // Validate ID before request
-  if (!id || !isValidCaseId(id)) {
-    throw new Error("Invalid case id");
-  }
-
-  // Build API URL
-  const url = `${process.env.API}/Case/Get-Case-By-Id/${id}`;
-
-  // Send request
   const response = await fetch(url, {
     method: "GET",
     headers: {
       Accept: "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token.token}`,
     },
-    next: { revalidate: 360, tags: [`case-${id}`] },
   });
 
-  // Handle HTTP errors
+  const result: APIResponse<SettlementDetails> = await response.json();
+
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    throw new Error(result?.message || "Failed to fetch settlement details");
   }
 
-  // Parse response payload
-  const data: APIResponse<Case> = await response.json();
-  return data;
+  return result;
 }
 
-// -----------------------------
-// Get Case Count By Category
-// -----------------------------
-interface CaseCategoryCount {
-  categoryId: number;
-  count: number;
-  categoryName: string;
-}
+/**
+ * Get all settlement request categories
+ */
+export async function getSettlementCategories(
+  params: SettlementCategoryListQueryParams = {},
+) {
+  const token = await getAuthHeader();
 
-interface CaseCountByCategoryResponse {
-  categories: CaseCategoryCount[];
-  totalCases: number;
-}
+  const queryString = buildQueryParams(params);
 
-export async function GetCaseCountByCategory() {
-  // Get auth token
-  const { token } = await getAuthHeader();
+  const url = `${process.env.API}/CaseAndSettlementCategories/list${
+    queryString ? `?${queryString}` : ""
+  }`;
 
-  // Build API URL
-  const url = `${process.env.API}/Case/get-cases-count-by-category`;
-
-  // Send request
   const response = await fetch(url, {
     method: "GET",
     headers: {
       Accept: "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token.token}`,
     },
-    next: { revalidate: 360, tags: ["case-count-category"] },
+    next: { revalidate: 360, tags: ["settlement-categories"] },
   });
 
-  // Handle HTTP errors
+  const result: APIResponse<SettlementCategory[]> = await response.json();
+
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    throw new Error(result?.message || "Failed to fetch settlement categories");
   }
 
-  // Parse response payload
-  const data: APIResponse<CaseCountByCategoryResponse> = await response.json();
-  return data;
+  return result;
 }
 
-// -----------------------------
-// Get Cases Stats
-// -----------------------------
-interface CasesStatsData {
-  activeCases: number;
-  completedCases: number;
-  totalCases: number;
-  totalSessions: number;
-}
+/**
+ * Get settlement request category details by id
+ */
+export async function getSettlementCategoryById(id: string) {
+  const token = await getAuthHeader();
 
-export async function GetCaseCount() {
-  // Get auth token
-  const { token } = await getAuthHeader();
+  const url = `${
+    process.env.API
+  }/CaseAndSettlementCategories/get-settlement-request-category-details?id=${encodeURIComponent(
+    id,
+  )}`;
 
-  // Build API URL
-  const url = `${process.env.API}/Case/Cases-Count`;
-
-  // Send request
   const response = await fetch(url, {
     method: "GET",
     headers: {
       Accept: "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token.token}`,
     },
-    next: { revalidate: 360, tags: ["case-count"] },
+    next: {
+      revalidate: 360,
+      tags: [`settlement-category-${id}`],
+    },
   });
 
-  // Handle HTTP errors
+  const result: APIResponse<SettlementCategoryDetails> = await response.json();
+
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    throw new Error(
+      result?.message || "Failed to fetch settlement category details",
+    );
   }
 
-  // Parse response payload
-  const data: APIResponse<CasesStatsData> = await response.json();
-  return data;
+  return result;
+}
+
+/**
+ * Get settlement sessions by settlement request id
+ */
+export async function getSettlementSessionsByRequestId(requestId: string) {
+  const token = await getAuthHeader();
+
+  const url = `${
+    process.env.API
+  }/SettlementRequestSession/by-request?requestId=${encodeURIComponent(
+    requestId,
+  )}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token.token}`,
+    },
+    next: {
+      revalidate: 360,
+      tags: [`settlement-sessions-request-${requestId}`],
+    },
+  });
+
+  const result: APIResponse<SettlementSession[]> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result?.message || "Failed to fetch settlement sessions");
+  }
+
+  return result;
+}
+
+/**
+ * Get settlement session details by session id
+ */
+export async function getSettlementSessionDetails(sessionId: string) {
+  const token = await getAuthHeader();
+
+  const url = `${
+    process.env.API
+  }/SettlementRequestSession/get-session-details?sessionId=${encodeURIComponent(
+    sessionId,
+  )}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token.token}`,
+    },
+  });
+
+  const result: APIResponse<SettlementSessionDetails> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result?.message || "Failed to fetch settlement session details",
+    );
+  }
+
+  return result;
 }
