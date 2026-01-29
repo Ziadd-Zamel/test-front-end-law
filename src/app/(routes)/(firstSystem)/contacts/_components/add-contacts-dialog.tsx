@@ -29,6 +29,7 @@ import {
 import { PhoneInput } from "@/components/ui/phone-input";
 import { cn } from "@/lib/utils";
 import { useAddContact } from "../_hooks/use-contact";
+import { toast } from "sonner";
 
 interface AddContactDialogProps {
   refType: "case" | "task";
@@ -45,10 +46,16 @@ export function AddContactDialog({ refType, refId }: AddContactDialogProps) {
       name: "",
       email: "",
       phoneNumber: "",
+      JobPosition: "",
     },
   });
 
   function onSubmit(values: AddContactFields) {
+    if (!values.email && !values.phoneNumber) {
+      toast.error("يجب ادخال الايميل او رقم الهاتف");
+      return;
+    }
+    console.log(values);
     addContact(
       {
         ...values,
@@ -74,7 +81,7 @@ export function AddContactDialog({ refType, refId }: AddContactDialogProps) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl!">
         <DialogHeader className="mt-5">
           <DialogTitle>إضافة جهة اتصال جديدة</DialogTitle>
           <DialogDescription>
@@ -86,19 +93,34 @@ export function AddContactDialog({ refType, refId }: AddContactDialogProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* NAME */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>الاسم</FormLabel>
-                  <FormControl>
-                    <Input placeholder="أدخل الاسم" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="flex items-center gap-3">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="w-1/2">
+                    <FormLabel>الاسم</FormLabel>
+                    <FormControl>
+                      <Input placeholder="أدخل الاسم" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="JobPosition"
+                render={({ field }) => (
+                  <FormItem className="w-1/2">
+                    <FormLabel>وصف العمل</FormLabel>
+                    <FormControl>
+                      <Input placeholder="أدخل الوصف" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* EMAIL */}
             <FormField

@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+const VALID_VALUE_REGEX = /^[a-zA-Z0-9-]+$/;
+
 export function buildQueryParams(params: Record<string, any>) {
   const query = new URLSearchParams();
 
@@ -6,9 +9,19 @@ export function buildQueryParams(params: Record<string, any>) {
     if (value === undefined || value === null || value === "") return;
 
     if (Array.isArray(value)) {
-      value.forEach((v) => query.append(`${key}[]`, String(v)));
+      value.forEach((v) => {
+        const stringValue = String(v);
+
+        if (!VALID_VALUE_REGEX.test(stringValue)) return;
+
+        query.append(`${key}[]`, stringValue);
+      });
     } else {
-      query.append(key, String(value));
+      const stringValue = String(value);
+
+      if (!VALID_VALUE_REGEX.test(stringValue)) return;
+
+      query.append(key, stringValue);
     }
   });
 

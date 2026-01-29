@@ -29,7 +29,7 @@ export default function ForgetPasswordForm() {
     resolver: zodResolver(ForgetPasswordSchema),
     defaultValues: {
       identity: "",
-      type: undefined,
+      type: "WhatsApp",
     },
   });
 
@@ -57,7 +57,7 @@ export default function ForgetPasswordForm() {
                   placeholder="أدخل رقم الهوية "
                   autoComplete="off"
                   className={cn(
-                    fieldState.error && "border-red-500 focus:border-none"
+                    fieldState.error && "border-red-500 focus:border-none",
                   )}
                 />
               </FormControl>
@@ -78,7 +78,7 @@ export default function ForgetPasswordForm() {
                   value={field.value}
                   className={cn(
                     "flex flex-col space-y-2 items-start",
-                    fieldState.error && "border-red-500"
+                    fieldState.error && "border-red-500",
                   )}
                 >
                   <div className="flex items-center gap-3">

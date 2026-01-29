@@ -48,7 +48,13 @@ export interface searchMailBody {
 }
 
 // send mail
-export async function sendMailService({ body }: { body: sendMailBody }) {
+export async function sendMailService({
+  body,
+  skipAttachmentCheck = false,
+}: {
+  body: sendMailBody;
+  skipAttachmentCheck?: boolean;
+}) {
   const token = await getAuthHeader();
 
   const transformedBody = {
@@ -56,7 +62,7 @@ export async function sendMailService({ body }: { body: sendMailBody }) {
     bodyHtml: body.bodyHtml,
     refType: body.refType,
     refId: body.refId,
-    isAttachmentCheckRequired: 1,
+    isAttachmentCheckRequired: skipAttachmentCheck ? 0 : 1,
     ...(body.ccClientContactIds &&
       body.ccClientContactIds?.length > 0 && {
         ccClientContactIds: body.ccClientContactIds,
@@ -77,12 +83,18 @@ export async function sendMailService({ body }: { body: sendMailBody }) {
       Authorization: `Bearer ${token.token}`,
       "Content-Type": "application/json",
     },
-
     body: JSON.stringify(transformedBody),
   });
+
   const result = await response.json();
+  console.log("resultresultresultresult", result);
+
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return {
+      message: result.Message,
+      success: false,
+      IsAttachmentConfirmationError: result.IsAttachmentConfirmationError,
+    };
   }
 
   return result;

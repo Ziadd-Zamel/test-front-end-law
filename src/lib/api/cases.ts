@@ -1,37 +1,29 @@
 import { APIResponse } from "@/lib/types/api";
 import { getAuthHeader } from "../utils/auth-header";
+import { buildQueryParams } from "../utils/build-query-params";
 
+// -----------------------------
+// Get All Cases
+// -----------------------------
 interface QueryParams {
-  PageNumber?: number;
+  pageNumber?: number;
   pageSize?: number;
 }
 
-interface CasesStatsData {
-  activeCases: number;
-  completedCases: number;
-  totalCases: number;
-  totalSessions: number;
-}
-
 export async function GetAllCases(params: QueryParams = {}) {
+  // Get auth token
   const { token } = await getAuthHeader();
 
-  const query = new URLSearchParams();
+  // Base API URL
+  const baseUrl = `${process.env.API}/Case/List-All-Cases`;
 
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === "") return;
+  // Build query parameters
+  const queryString = buildQueryParams(params);
 
-    if (Array.isArray(value)) {
-      value.forEach((v) => query.append(`${key}[]`, String(v)));
-    } else {
-      query.append(key, String(value));
-    }
-  });
+  // Final request URL
+  const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
 
-  const url = `${process.env.API}/Case/List-All-Cases/${
-    query.toString() ? `?${query}` : ""
-  }`;
-
+  // Send request
   const response = await fetch(url, {
     method: "GET",
     headers: {
@@ -41,19 +33,38 @@ export async function GetAllCases(params: QueryParams = {}) {
     next: { revalidate: 360, tags: ["all-cases"] },
   });
 
+  // Handle HTTP errors
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  const data: APIResponse<Case[]> = await response.json();
 
+  // Parse response payload
+  const data: APIResponse<Case[]> = await response.json();
   return data;
 }
 
+// -----------------------------
+// Validate Case ID
+// -----------------------------
+const VALID_ID_REGEX = /^[a-zA-Z0-9-]+$/;
+export const isValidCaseId = (id: string) => VALID_ID_REGEX.test(id);
+
+// -----------------------------
+// Get Case By ID
+// -----------------------------
 export async function GetCaseById(id: string) {
+  // Get auth token
   const { token } = await getAuthHeader();
 
+  // Validate ID before request
+  if (!id || !isValidCaseId(id)) {
+    throw new Error("Invalid case id");
+  }
+
+  // Build API URL
   const url = `${process.env.API}/Case/Get-Case-By-Id/${id}`;
 
+  // Send request
   const response = await fetch(url, {
     method: "GET",
     headers: {
@@ -62,61 +73,91 @@ export async function GetCaseById(id: string) {
     },
     next: { revalidate: 360, tags: [`case-${id}`] },
   });
-  const data: APIResponse<Case> = await response.json();
+
+  // Handle HTTP errors
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
+  // Parse response payload
+  const data: APIResponse<Case> = await response.json();
   return data;
 }
+
+// -----------------------------
+// Get Case Count By Category
+// -----------------------------
 interface CaseCategoryCount {
   categoryId: number;
   count: number;
   categoryName: string;
 }
-interface respons {
+
+interface CaseCountByCategoryResponse {
   categories: CaseCategoryCount[];
   totalCases: number;
 }
+
 export async function GetCaseCountByCategory() {
+  // Get auth token
   const { token } = await getAuthHeader();
 
+  // Build API URL
   const url = `${process.env.API}/Case/get-cases-count-by-category`;
 
+  // Send request
   const response = await fetch(url, {
     method: "GET",
     headers: {
       Accept: "application/json",
       Authorization: `Bearer ${token}`,
     },
-    next: { revalidate: 360, tags: [`case-count-category`] },
+    next: { revalidate: 360, tags: ["case-count-category"] },
   });
 
+  // Handle HTTP errors
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  const data: APIResponse<respons> = await response.json();
 
+  // Parse response payload
+  const data: APIResponse<CaseCountByCategoryResponse> = await response.json();
   return data;
 }
+
+// -----------------------------
+// Get Cases Stats
+// -----------------------------
+interface CasesStatsData {
+  activeCases: number;
+  completedCases: number;
+  totalCases: number;
+  totalSessions: number;
+}
+
 export async function GetCaseCount() {
+  // Get auth token
   const { token } = await getAuthHeader();
 
+  // Build API URL
   const url = `${process.env.API}/Case/Cases-Count`;
 
+  // Send request
   const response = await fetch(url, {
     method: "GET",
     headers: {
       Accept: "application/json",
       Authorization: `Bearer ${token}`,
     },
-    next: { revalidate: 360, tags: [`case-count`] },
+    next: { revalidate: 360, tags: ["case-count"] },
   });
 
+  // Handle HTTP errors
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  const data: APIResponse<CasesStatsData> = await response.json();
 
+  // Parse response payload
+  const data: APIResponse<CasesStatsData> = await response.json();
   return data;
 }

@@ -16,38 +16,118 @@ import {
   updateMessageBody,
 } from "@/lib/services/mail.service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
 
 /**
  * Hook for sending mail to clients
  * Used to send mail with attachments and references
  */
+
 export function useSendMail() {
   const queryClient = useQueryClient();
+  const [confirmationState, setConfirmationState] = useState<{
+    isOpen: boolean;
+    message: string;
+    pendingData: sendMailBody | null;
+    onSuccessCallback: (() => void) | null;
+  }>({
+    isOpen: false,
+    message: "",
+    pendingData: null,
+    onSuccessCallback: null,
+  });
 
   const { isPending, error, mutate } = useMutation({
-    mutationFn: async (data: sendMailBody) => {
-      const result = await sendMailService({ body: data });
+    mutationFn: async ({
+      data,
+      skipAttachmentCheck = false,
+    }: {
+      data: sendMailBody;
+      skipAttachmentCheck?: boolean;
+      onSuccessCallback?: () => void;
+    }) => {
+      const result = await sendMailService({
+        body: data,
+        skipAttachmentCheck,
+      });
 
       if (!result.success) {
+        // If it's an attachment confirmation error, don't throw
+        if (result.IsAttachmentConfirmationError) {
+          return {
+            needsConfirmation: true,
+            message: result.message,
+          };
+        }
+
         throw new Error(result.message);
       }
 
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Check if confirmation is needed
+      if (data?.needsConfirmation) {
+        setConfirmationState({
+          isOpen: true,
+          message: data.message,
+          pendingData: variables.data,
+          onSuccessCallback: variables.onSuccessCallback || null,
+        });
+        return;
+      }
+
+      // Normal success flow
       toast.success("تم إرسال البريد بنجاح!");
       queryClient.invalidateQueries({ queryKey: ["mail"] });
+
+      // Close the dialog
+      setConfirmationState({
+        isOpen: false,
+        message: "",
+        pendingData: null,
+        onSuccessCallback: null,
+      });
+
+      // Execute the onSuccess callback
+      if (variables.onSuccessCallback) {
+        variables.onSuccessCallback();
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message || "حدث خطأ أثناء إرسال البريد");
     },
   });
 
+  const handleConfirm = () => {
+    if (confirmationState.pendingData) {
+      mutate({
+        data: confirmationState.pendingData,
+        skipAttachmentCheck: true,
+        onSuccessCallback: confirmationState.onSuccessCallback || undefined,
+      });
+    }
+    // Don't reset here - let onSuccess handle it after API success
+  };
+
+  const handleCancel = () => {
+    setConfirmationState({
+      isOpen: false,
+      message: "",
+      pendingData: null,
+      onSuccessCallback: null,
+    });
+  };
+
   return {
     isPending,
     error,
-    sendMail: mutate,
+    sendMail: (data: sendMailBody, options?: { onSuccess?: () => void }) =>
+      mutate({ data, onSuccessCallback: options?.onSuccess }),
+    confirmationState,
+    handleConfirm,
+    handleCancel,
   };
 }
 

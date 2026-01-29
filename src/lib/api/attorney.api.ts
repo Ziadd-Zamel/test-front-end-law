@@ -8,13 +8,20 @@ import {
   UserAttorney,
 } from "../types/attorney";
 import { getAuthHeader } from "../utils/auth-header";
+import { buildQueryParams } from "../utils/build-query-params";
+import { isValidAttorneyCategoryId } from "../utils/validate-id";
 
+// -----------------------------
 // Attorney Categories
+// -----------------------------
 export const getAttorneyCategories = async () => {
+  // Get auth token
+  const { token } = await getAuthHeader();
+
+  // Build API URL
   const url = `${process.env.API}/Attorney/list-main-categories`;
 
-  // Get the auth token
-  const { token } = await getAuthHeader();
+  // Send request
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -22,41 +29,44 @@ export const getAttorneyCategories = async () => {
     },
     next: { revalidate: 600 },
   });
+
+  // Handle HTTP errors
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
+
+  // Parse response payload
   const payload: APIResponse<AttorneyCategory[]> = await response.json();
   return payload;
 };
 
-// All Attornies Requests
+// -----------------------------
+// All Attorney Requests
+// -----------------------------
 export const getAllAttorneyRequests = async (
   clientId?: string,
   status?: string,
   pageSize: number = 5,
-  pageNumber: number = 1
+  pageNumber: number = 1,
 ) => {
-  const baseUrl = `${process.env.API}/Attorney/list-my-attorney-requests`;
-  const params = new URLSearchParams();
-
-  if (clientId) {
-    params.append("clientId", clientId);
-  }
-
-  if (status) {
-    params.append("status", status);
-  }
-  if (pageNumber) {
-    params.append("pageNumber", pageNumber.toString());
-  }
-  if (pageSize) {
-    params.append("pageSize", pageSize.toString());
-  }
-
-  const url = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
-
-  // Get the auth token
+  // Get auth token
   const { token } = await getAuthHeader();
+
+  // Base API URL
+  const baseUrl = `${process.env.API}/Attorney/list-my-attorney-requests`;
+
+  // Build query parameters
+  const queryString = buildQueryParams({
+    clientId,
+    status,
+    pageNumber,
+    pageSize,
+  });
+
+  // Final request URL
+  const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+
+  // Send request
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -65,20 +75,32 @@ export const getAllAttorneyRequests = async (
     cache: "no-store",
   });
 
+  // Handle HTTP errors
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
+  // Parse response payload
   const payload: APIResponse<Attorney[]> = await response.json();
   return payload;
 };
 
-// get One Attorney Request
+// -----------------------------
+// Get One Attorney Request
+// -----------------------------
 export const getAttorneyRequestById = async (id: string) => {
+  // Get auth token
+  const { token } = await getAuthHeader();
+
+  // Validate id before sending request
+  if (!id || !isValidAttorneyCategoryId(id)) {
+    throw new Error("Invalid attorney id");
+  }
+
+  // Build API URL
   const url = `${process.env.API}/Attorney/get-attorney-request-details?id=${id}`;
 
-  // Get the auth token
-  const { token } = await getAuthHeader();
+  // Send request
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -87,40 +109,43 @@ export const getAttorneyRequestById = async (id: string) => {
     next: { revalidate: 600 },
   });
 
+  // Handle HTTP errors
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
+
+  // Parse response payload
   const payload: APIResponse<AttorneyRequestData> = await response.json();
   return payload;
 };
 
+// -----------------------------
+// All User Attorneys
+// -----------------------------
 export const getAllUserAttorney = async (
   clientId?: string,
   status?: string,
   pageSize: number = 5,
-  pageNumber: number = 1
+  pageNumber: number = 1,
 ) => {
-  const baseUrl = `${process.env.API}/Attorney/list-my-attorneys`;
-  const params = new URLSearchParams();
-
-  if (clientId) {
-    params.append("clientId", clientId);
-  }
-  if (pageNumber) {
-    params.append("pageNumber", pageNumber.toString());
-  }
-  if (pageSize) {
-    params.append("pageSize", pageSize.toString());
-  }
-
-  if (status) {
-    params.append("status", status);
-  }
-
-  const url = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
-
-  // Get the auth token
+  // Get auth token
   const { token } = await getAuthHeader();
+
+  // Base API URL
+  const baseUrl = `${process.env.API}/Attorney/list-my-attorneys`;
+
+  // Build query parameters
+  const queryString = buildQueryParams({
+    clientId,
+    status,
+    pageNumber,
+    pageSize,
+  });
+
+  // Final request URL
+  const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+
+  // Send request
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -129,10 +154,12 @@ export const getAllUserAttorney = async (
     cache: "no-store",
   });
 
+  // Handle HTTP errors
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
+  // Parse response payload
   const payload: APIResponse<UserAttorney[]> = await response.json();
   return payload;
 };
@@ -141,29 +168,26 @@ export const getAllAttorney = async (
   clientId?: string,
   status?: string,
   pageSize: number = 5,
-  pageNumber: number = 1
+  pageNumber: number = 1,
 ) => {
-  const baseUrl = `${process.env.API}/Attorney/list-all-attorneys`;
-  const params = new URLSearchParams();
-
-  if (clientId) {
-    params.append("clientId", clientId);
-  }
-  if (pageNumber) {
-    params.append("pageNumber", pageNumber.toString());
-  }
-  if (pageSize) {
-    params.append("pageSize", pageSize.toString());
-  }
-
-  if (status) {
-    params.append("status", status);
-  }
-
-  const url = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
-
-  // Get the auth token
+  // Get auth token
   const { token } = await getAuthHeader();
+
+  // Base API URL
+  const baseUrl = `${process.env.API}/Attorney/list-all-attorneys`;
+
+  // Build query parameters
+  const queryString = buildQueryParams({
+    clientId,
+    status,
+    pageNumber,
+    pageSize,
+  });
+
+  // Final request URL
+  const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+
+  // Send request
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -172,19 +196,29 @@ export const getAllAttorney = async (
     cache: "no-store",
   });
 
+  // Handle HTTP errors
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
+  // Parse response payload
   const payload: APIResponse<AllAttorney[]> = await response.json();
   return payload;
 };
 
 export const getUserAttorneyById = async (id: string) => {
+  // Get auth token
+  const { token } = await getAuthHeader();
+
+  // Validate id before sending request
+  if (!id || !isValidAttorneyCategoryId(id)) {
+    throw new Error("Invalid attorney id");
+  }
+
+  // Build API URL
   const url = `${process.env.API}/Attorney/get-attorney-details/${id}`;
 
-  // Get the auth token
-  const { token } = await getAuthHeader();
+  // Send request
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -193,28 +227,12 @@ export const getUserAttorneyById = async (id: string) => {
     next: { revalidate: 600 },
   });
 
+  // Handle HTTP errors
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  const payload: APIResponse<AttorneyValidationData> = await response.json();
-  return payload;
-};
-export const getAttorneyFileById = async (path: string) => {
-  // Get the auth token
-  const { token } = await getAuthHeader();
-  const response = await fetch(
-    `${process.env.API}/Attorney/download-attorney-pdf/${path}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/pdf",
-      },
-      next: { revalidate: 600 },
-    }
-  );
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+
+  // Parse response payload
   const payload: APIResponse<AttorneyValidationData> = await response.json();
   return payload;
 };

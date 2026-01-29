@@ -13,8 +13,9 @@ export interface ContactResponse {
 
 export interface AddContactPayload {
   name: string;
-  email: string;
-  phoneNumber: string;
+  email?: string;
+  JobPosition?: string;
+  phoneNumber?: string;
   refId: string;
   refType: "case" | "task";
 }
@@ -36,19 +37,21 @@ export async function addContactService(
 ): Promise<ContactResponse> {
   const token = await getAuthHeader();
 
+  const payload = {
+    name: data.name,
+    refId: data.refId,
+    refType: data.refType,
+    ...(data.email && { email: data.email }),
+    ...(data.JobPosition && { JobPosition: data.JobPosition }),
+    ...(data.phoneNumber && { phoneNumber: data.phoneNumber }),
+  };
   const response = await fetch(`${process.env.API}/Contact/AddByRef`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token.token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      name: data.name,
-      email: data.email,
-      phoneNumber: data.phoneNumber,
-      refId: data.refId,
-      refType: data.refType,
-    }),
+    body: JSON.stringify(payload),
   });
 
   const result = await response.json();
