@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
           const result: LoginResponse = await response.json();
 
           if (!response.ok) {
-            throw new Error(result.Message || `HTTP error! ${response.status}`);
+            throw new Error(result.message || `HTTP error! ${response.status}`);
           }
 
           if (result.data.verify) {
