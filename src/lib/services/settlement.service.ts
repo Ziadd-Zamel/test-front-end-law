@@ -34,7 +34,7 @@ export interface SettlementSessionUpdatePayload {
  * Create a new settlement request category
  */
 export async function createSettlementCategoryService(
-  data: SettlementCategoryCreatePayload
+  data: SettlementCategoryCreatePayload,
 ) {
   const token = await getAuthHeader();
 
@@ -47,13 +47,13 @@ export async function createSettlementCategoryService(
         Authorization: `Bearer ${token.token}`,
       },
       body: JSON.stringify(data),
-    }
+    },
   );
 
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidateTag("settlement-categories");
@@ -65,7 +65,7 @@ export async function createSettlementCategoryService(
  * Update an existing settlement request category
  */
 export async function updateSettlementCategoryService(
-  data: SettlementCategoryUpdatePayload
+  data: SettlementCategoryUpdatePayload,
 ) {
   const token = await getAuthHeader();
 
@@ -78,13 +78,13 @@ export async function updateSettlementCategoryService(
         Authorization: `Bearer ${token.token}`,
       },
       body: JSON.stringify(data),
-    }
+    },
   );
 
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidateTag("settlement-categories");
@@ -105,13 +105,13 @@ export async function deleteSettlementCategoryService(id: string) {
       headers: {
         Authorization: `Bearer ${token.token}`,
       },
-    }
+    },
   );
 
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidateTag("settlement-categories");
@@ -138,7 +138,7 @@ export async function createSettlementRequestService(formData: FormData) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidateTag("all-settlement");
@@ -163,7 +163,7 @@ export async function updateSettlementRequestService(formData: FormData) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidateTag("all-settlement");
@@ -187,13 +187,13 @@ export async function createSettlementSessionService(formData: FormData) {
         Authorization: `Bearer ${token.token}`,
       },
       body: formData,
-    }
+    },
   );
 
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidateTag("all-settlement");
@@ -205,7 +205,7 @@ export async function createSettlementSessionService(formData: FormData) {
  * Update an existing settlement request session
  */
 export async function updateSettlementSessionService(
-  data: SettlementSessionUpdatePayload
+  data: SettlementSessionUpdatePayload,
 ) {
   const token = await getAuthHeader();
 
@@ -218,13 +218,13 @@ export async function updateSettlementSessionService(
         Authorization: `Bearer ${token.token}`,
       },
       body: JSON.stringify(data),
-    }
+    },
   );
 
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidatePath("/settlement/sessions");

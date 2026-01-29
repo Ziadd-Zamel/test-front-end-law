@@ -33,7 +33,7 @@ export interface ResetEmailPasswordPayload {
 export async function registerUserService(
   data: RegisterFields,
   locationData?: LocationData,
-  visitorId?: string
+  visitorId?: string,
 ) {
   const body = {
     ...data,
@@ -57,7 +57,7 @@ export async function registerUserService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -70,7 +70,7 @@ export async function registerUserService(
  */
 export async function verifyWhatsappCodeService(
   code: string,
-  visitorId: string
+  visitorId: string,
 ) {
   const cookieStore = await cookies();
   const token = cookieStore.get("registerToken")?.value;
@@ -95,7 +95,7 @@ export async function verifyWhatsappCodeService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -128,7 +128,7 @@ export async function verifyEmailCodeService(code: string, visitorId: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -161,7 +161,7 @@ export async function verifyForgetCodeService(code: string, visitorId: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -184,7 +184,7 @@ export async function forgetPasswordService(data: ForgetPasswordFields) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -195,7 +195,7 @@ export async function forgetPasswordService(data: ForgetPasswordFields) {
  */
 export async function resetEmailPasswordService(
   data: ResetEmailPasswordFields,
-  searchParams: { token: string; email: string }
+  searchParams: { token: string; email: string },
 ) {
   const { token, email } = searchParams;
 
@@ -219,7 +219,7 @@ export async function resetEmailPasswordService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -229,7 +229,7 @@ export async function resetEmailPasswordService(
  * Reset password via WhatsApp verification
  */
 export async function resetWhatsPasswordService(
-  data: ResetWhatsPasswordFields
+  data: ResetWhatsPasswordFields,
 ) {
   const cookieStore = await cookies();
   const token = cookieStore.get("forgetPasswordToken")?.value;
@@ -250,7 +250,7 @@ export async function resetWhatsPasswordService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -258,7 +258,7 @@ export async function resetWhatsPasswordService(
 
 export async function sendVerificationCodeService(
   data: SendVerificationCodeFields,
-  locationData?: LocationData
+  locationData?: LocationData,
 ) {
   const body = {
     identity: data.identity,
@@ -281,7 +281,7 @@ export async function sendVerificationCodeService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -303,7 +303,7 @@ export async function refreshTokenService(refreshToken: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;

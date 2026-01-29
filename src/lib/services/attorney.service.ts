@@ -42,7 +42,7 @@ export async function addAttorneyService(formData: FormData) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidatePath("/attorney/list");
@@ -63,13 +63,13 @@ export async function requestAtorneyService(data: AttorneyRequestPayload) {
         Authorization: `Bearer ${token.token}`,
       },
       body: JSON.stringify(data),
-    }
+    },
   );
 
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidatePath("/attorney/list");
@@ -92,7 +92,7 @@ export async function revokeAttorneyService(data: AttorneyRevokePayload) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
   revalidatePath("/attorney/attorney-management");
 
@@ -112,13 +112,13 @@ export async function validateAttorneyService(data: AttorneyValidationFields) {
         Authorization: `Bearer ${token.token}`,
       },
       body: JSON.stringify(data),
-    }
+    },
   );
 
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -141,12 +141,12 @@ export async function changeAttorneyStatyService(data: changestatuAtornyProps) {
         Status: "rejected",
         RejectionReason: data.reason,
       }),
-    }
+    },
   );
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
   revalidatePath("/attorney/attorney-management");
 

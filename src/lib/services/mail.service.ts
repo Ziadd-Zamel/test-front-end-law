@@ -82,7 +82,7 @@ export async function sendMailService({ body }: { body: sendMailBody }) {
   });
   const result = await response.json();
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -108,7 +108,7 @@ export async function sendEmployeeMailService({
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -137,7 +137,7 @@ export async function sendAutoMailService({
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -172,13 +172,10 @@ export async function replayMailService({ body }: { body: replayMailBody }) {
     body: JSON.stringify(transformedBody),
   });
 
-  console.log("response", response);
-
   const result = await response.json();
-  console.log("result", result);
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidateTag("mail-details");
@@ -219,7 +216,7 @@ export async function searchMailService({
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -243,7 +240,7 @@ export async function logMailReadService(mailId: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   return result;
@@ -267,7 +264,7 @@ export async function updateMessageService(body: updateMessageBody) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
   revalidateTag("mail-details");
 

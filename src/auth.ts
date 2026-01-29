@@ -65,12 +65,12 @@ export const authOptions: NextAuthOptions = {
           const result: LoginResponse = await response.json();
 
           if (!response.ok) {
-            throw new Error(result.message || `HTTP error! ${response.status}`);
+            throw new Error(result.Message || `HTTP error! ${response.status}`);
           }
 
           if (result.data.verify) {
             throw new Error(
-              `VERIFICATION_REQUIRED|||${result.data.token}|||${result.message}`
+              `VERIFICATION_REQUIRED|||${result.data.token}|||${result.message}`,
             );
           }
 
@@ -103,7 +103,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error(
             error instanceof Error
               ? error.message
-              : "رقم الهوية الوطنية او كلمة المرور غير صحيحة"
+              : "رقم الهوية الوطنية او كلمة المرور غير صحيحة",
           );
         }
       },
@@ -140,7 +140,7 @@ export const authOptions: NextAuthOptions = {
 
           if (!response.ok) {
             throw new Error(
-              result.message || `HTTP error! status: ${response.status}`
+              result.message || `HTTP error! status: ${response.status}`,
             );
           }
 
@@ -171,7 +171,7 @@ export const authOptions: NextAuthOptions = {
           };
         } catch (error) {
           throw new Error(
-            error instanceof Error ? error.message : "كود التحقق غير صحيح"
+            error instanceof Error ? error.message : "كود التحقق غير صحيح",
           );
         }
       },
@@ -218,7 +218,7 @@ export const authOptions: NextAuthOptions = {
       // ✅ CHECK SERVER TOKEN EXPIRY - Auto refresh if expired
       const cookiesStore = await cookies();
       const serverExpiresAt = cookiesStore.get(
-        "token-expires-at-server"
+        "token-expires-at-server",
       )?.value;
 
       if (serverExpiresAt) {
@@ -240,7 +240,7 @@ export const authOptions: NextAuthOptions = {
                 body: JSON.stringify({
                   refreshToken: token.refreshToken,
                 }),
-              }
+              },
             );
 
             const result = await response.json();
@@ -270,7 +270,7 @@ export const authOptions: NextAuthOptions = {
                   sameSite: "lax",
                   path: "/",
                   maxAge: 10 * 60,
-                }
+                },
               );
 
               // Fetch updated profile

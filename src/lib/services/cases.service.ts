@@ -49,7 +49,7 @@ export async function addCaseService(data: AddCasePayload) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidatePath("/cases/list");
@@ -74,7 +74,7 @@ export async function editCaseService(data: EditCasePayload) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidatePath("/cases/list");
@@ -99,7 +99,7 @@ export async function closeCaseService(formData: FormData, id: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.Message, success: false };
   }
 
   revalidatePath("/cases/list");
