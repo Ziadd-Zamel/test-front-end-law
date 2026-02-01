@@ -12,8 +12,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import {
   ForgetPasswordFields,
   ForgetPasswordSchema,
@@ -66,45 +64,7 @@ export default function ForgetPasswordForm() {
           )}
         />
 
-        {/* Type Radio Group field */}
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field, fieldState }) => (
-            <FormItem>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  className={cn(
-                    "flex flex-col space-y-2 items-start",
-                    fieldState.error && "border-red-500",
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem
-                      className="cursor-pointer"
-                      value="Email"
-                      id="email"
-                    />
-                    <Label htmlFor="email">البريد الإلكتروني</Label>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem
-                      className="cursor-pointer"
-                      value="WhatsApp"
-                      id="whatsapp"
-                    />
-                    <Label htmlFor="whatsapp">واتساب</Label>
-                  </div>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Form actions & links */}
+        {/* Form actions*/}
         <div className="flex flex-col w-full items-end">
           <Button
             type="submit"

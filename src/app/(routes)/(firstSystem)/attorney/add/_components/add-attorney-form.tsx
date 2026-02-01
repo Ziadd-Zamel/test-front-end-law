@@ -95,7 +95,7 @@ export default function AddAttorneyForm() {
             });
           }, 500);
         },
-      }
+      },
     );
   }
 
@@ -134,7 +134,7 @@ export default function AddAttorneyForm() {
         onSuccess: () => {
           setShowValidationResult(false);
         },
-      }
+      },
     );
   };
 

@@ -135,13 +135,12 @@ export const getMessageDetails = async (
 
   // Build query params
   const queryString = buildQueryParams({
-    messageId: decodedId,
     mailBox: mailBox,
     folder: folder,
   });
 
   const response = await fetch(
-    `${process.env.MAIL_API}/Mail/Get-Message-Details?${queryString}`,
+    `${process.env.MAIL_API}/Mail/Get-Message-Details?messageId=${decodedId}&${queryString}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -151,12 +150,13 @@ export const getMessageDetails = async (
       next: { tags: ["mail-details"] },
     },
   );
+  const payload: APIResponse<MailDetailsResponse> = await response.json();
 
+  console.log(response);
+  console.log(payload);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-
-  const payload: APIResponse<MailDetailsResponse> = await response.json();
 
   return payload;
 };

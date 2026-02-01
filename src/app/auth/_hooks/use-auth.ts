@@ -48,7 +48,7 @@ export function useRegisterUser() {
       const result = await registerUserService(
         data,
         locationData,
-        visitorId || ""
+        visitorId || "",
       );
 
       if (!result.success) {
@@ -60,7 +60,7 @@ export function useRegisterUser() {
     onSuccess: (data) => {
       toast.success("تم التسجيل بنجاح!");
       Cookies.set("registerToken", data.token);
-      router.push("/auth/otp-email");
+      router.push("/auth/otp-whatsapp");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -96,7 +96,7 @@ export function useVerifyWhatsappCode() {
     },
     onSuccess: () => {
       toast.success("تم التحقق من رقم واتساب بنجاح");
-      router.push("/dashboard");
+      router.push("/auth/otp-email");
     },
     onError: (error: Error) => {
       toast.error(error.message || "حدث خطأ أثناء التحقق من رمز واتساب");
@@ -130,7 +130,7 @@ export function useVerifyEmailCode() {
     },
     onSuccess: () => {
       toast.success("تم التحقق من البريد الإلكتروني بنجاح");
-      router.push("/auth/otp-whatsapp");
+      router.push("/dashboard");
     },
     onError: (error: Error) => {
       toast.error(error.message || "حدث خطأ أثناء التحقق من الرمز");
@@ -197,18 +197,14 @@ export function useForgetPassword() {
 
       return result.data;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       toast.success("تم إرسال رمز إعادة تعيين كلمة المرور بنجاح!");
-      if (variables.type === "Email") {
-        router.push("/auth/login");
-      } else if (variables.type === "WhatsApp") {
-        Cookies.set("forgetPasswordToken", data.token);
-        router.push("/auth/forget-password/reset-password/otp");
-      }
+      Cookies.set("forgetPasswordToken", data.token);
+      router.push("/auth/forget-password/reset-password/otp");
     },
     onError: (error: Error) => {
       toast.error(
-        error.message || "حدث خطأ أثناء إرسال رمز إعادة تعيين كلمة المرور"
+        error.message || "حدث خطأ أثناء إرسال رمز إعادة تعيين كلمة المرور",
       );
     },
   });
@@ -252,7 +248,7 @@ export function useResetEmailPassword(searchParams: {
     },
     onSuccess: () => {
       toast.success(
-        "تم إعادة تعيين كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول."
+        "تم إعادة تعيين كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول.",
       );
       router.push("/auth/login");
     },
@@ -287,7 +283,7 @@ export function useResetWhatsPassword() {
     },
     onSuccess: () => {
       toast.success(
-        "تم إعادة تعيين كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول."
+        "تم إعادة تعيين كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول.",
       );
       router.push("/auth/login");
     },
@@ -316,7 +312,7 @@ export default function useSendVerificationCode() {
     }: SendVerificationWithLocation) => {
       const result = await sendVerificationCodeService(
         { identity },
-        locationData
+        locationData,
       );
 
       if (!result.success) {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-const VALID_VALUE_REGEX = /^[a-zA-Z0-9-]+$/;
+const VALID_VALUE_REGEX = /^[a-zA-Z0-9_-]+$/;
 
 export function buildQueryParams(params: Record<string, any>) {
   const query = new URLSearchParams();

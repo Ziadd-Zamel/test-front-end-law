@@ -30,11 +30,51 @@ const permissionRoutes: Record<string, string> = {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  /* ------------------------------------------------------------------
+   URL PARAMETER VALIDATION (except /email-hub routes)
+   ------------------------------------------------------------------ */
+  if (!pathname.startsWith("/email-hub")) {
+    const { searchParams } = request.nextUrl;
+
+    // ONLY allow: letters, numbers, hyphens, and underscores
+    const VALID_VALUE_REGEX = /^[a-zA-Z0-9_-]+$/;
+
+    for (const [key, value] of searchParams.entries()) {
+      // Skip empty values
+      if (!value) continue;
+
+      // Decode the value first
+      const decodedValue = decodeURIComponent(value);
+      const decodedKey = decodeURIComponent(key);
+
+      // Block anything that's NOT alphanumeric, underscore, or hyphen
+      if (!VALID_VALUE_REGEX.test(decodedValue)) {
+        console.log(`Blocked invalid parameter: ${decodedKey}=${decodedValue}`);
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+
+      // Also validate the key name
+      if (!VALID_VALUE_REGEX.test(decodedKey)) {
+        console.log(`Blocked invalid parameter key: ${decodedKey}`);
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+    }
+
+    // ALSO check path segments (the parts between slashes)
+    const pathSegments = pathname.split("/").filter(Boolean);
+    for (const segment of pathSegments) {
+      const decodedSegment = decodeURIComponent(segment);
+      if (!VALID_VALUE_REGEX.test(decodedSegment)) {
+        console.log(`Blocked invalid path segment: ${decodedSegment}`);
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+    }
+  }
   // Route flags
   const isPublicPath = publicPaths.some((p) => pathname.startsWith(p));
   const isAuthPath = pathname.startsWith("/auth");
   const isVerificationPath = verificationPaths.some((p) =>
-    pathname.startsWith(p)
+    pathname.startsWith(p),
   );
 
   // Read auth cookie
@@ -88,7 +128,7 @@ export async function middleware(request: NextRequest) {
     if (!isVerified) {
       if (!isVerificationPath && !isPublicPath) {
         return NextResponse.redirect(
-          new URL("/verification-required", request.url)
+          new URL("/verification-required", request.url),
         );
       }
     }
@@ -128,14 +168,14 @@ export async function middleware(request: NextRequest) {
      ------------------------------------------------------------------ */
   if (isAuthenticated && decodedToken && !isAdmin) {
     for (const [route, requiredPermission] of Object.entries(
-      permissionRoutes
+      permissionRoutes,
     )) {
       if (pathname.startsWith(route)) {
         const userPermissions = decodedToken?.profile?.permissions ?? [];
 
         const hasPermission = userPermissions.some(
           (permission: { id: number; name: string }) =>
-            permission.name === requiredPermission
+            permission.name === requiredPermission,
         );
 
         if (!hasPermission) {

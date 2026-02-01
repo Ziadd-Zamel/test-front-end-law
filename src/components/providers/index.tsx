@@ -6,12 +6,14 @@ import SessionClientProvider from "./components/session-client-provider";
 import { ThemeProvider } from "./components/theme-provider";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { TokenRefreshProvider } from "./components/token-refresh-provider";
+import DisabledProtection from "./components/disabled-protection";
 
 export default async function Providers({ children }: ProvidersProps) {
   return (
     <SessionClientProvider>
       <ReactQueryProvider>
         <TokenRefreshProvider>
+          <DisabledProtection />
           <ThemeProvider
             defaultTheme="light"
             attribute="class"
