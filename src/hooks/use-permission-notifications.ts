@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import { toast } from "sonner";
+import { useRefreshToken } from "@/app/auth/_hooks/use-auth";
 
 export const usePermissionNotifications = (token: string | null) => {
+  const { refreshToken } = useRefreshToken();
+  const connectionRef = useRef<signalR.HubConnection | null>(null);
+
   useEffect(() => {
     if (!token) return;
 
@@ -15,6 +19,8 @@ export const usePermissionNotifications = (token: string | null) => {
       .withAutomaticReconnect()
       .build();
 
+    connectionRef.current = connection;
+
     connection
       .start()
       .then(() => {
@@ -24,12 +30,34 @@ export const usePermissionNotifications = (token: string | null) => {
         console.error("SignalR connection error:", error);
       });
 
-    connection.on("ReceiveNotification", (notification) => {
+    connection.on("ReceiveNotification", async (notification) => {
       console.log(notification);
 
       toast.info(notification.title, {
         description: notification.message,
       });
+
+      // Refresh token after receiving notification
+      try {
+        await refreshToken();
+
+        // Reconnect after successful token refresh
+        console.log("🔄 Reconnecting after token refresh...");
+        await connection.stop();
+        await connection.start();
+        console.log("🟢 Reconnected successfully");
+      } catch (error) {
+        console.error("Failed to refresh token or reconnect:", error);
+      }
+    });
+
+    // Handle reconnection events
+    connection.onreconnected((connectionId) => {
+      console.log("🔄 Reconnected to SignalR", connectionId);
+    });
+
+    connection.onreconnecting((error) => {
+      console.log("⚠️ Attempting to reconnect...", error);
     });
 
     return () => {
@@ -37,5 +65,5 @@ export const usePermissionNotifications = (token: string | null) => {
         console.log("🔴 Disconnected from SignalR");
       });
     };
-  }, [token]);
+  }, [token, refreshToken]);
 };
