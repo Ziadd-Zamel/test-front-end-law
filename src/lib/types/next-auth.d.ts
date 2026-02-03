@@ -9,6 +9,7 @@ declare module "next-auth" {
     loginMethod?: "credentials" | "verification-code";
     type?: string;
     roles?: string[];
+    sessionKey: string;
 
     user: {
       id?: number;
@@ -38,6 +39,7 @@ declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     accessToken?: string;
     refreshToken?: string;
+    sessionKey: string;
     accessTokenExpires?: number;
     error?: string;
     loginMethod?: "credentials" | "verification-code";
@@ -50,6 +52,8 @@ declare module "next-auth/jwt" {
 export interface ExtendedUser extends DefaultUser {
   token?: string;
   refreshToken?: string;
+  sessionKey: string;
+
   message?: string;
   loginMethod?: "credentials" | "verification-code";
   type?: string;

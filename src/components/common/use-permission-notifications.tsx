@@ -1,9 +1,12 @@
 "use client";
-import { useAuthToken } from "@/hooks/use-auth-token";
 import { usePermissionNotifications } from "@/hooks/use-permission-notifications";
 
-export default function PermissionNotificationListener() {
-  const { token } = useAuthToken();
+export default function PermissionNotificationListener({
+  token,
+}: {
+  token: string;
+  baseUrl: string;
+}) {
   usePermissionNotifications(token);
 
   return null;

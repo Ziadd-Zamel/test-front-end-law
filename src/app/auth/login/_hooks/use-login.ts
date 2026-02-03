@@ -36,6 +36,18 @@ export default function useLogin() {
         redirect: false,
       });
 
+      console.log("Login Payload: ", {
+        identity,
+        password,
+        visitorId,
+        ip: locationData?.ip,
+        country: locationData?.country,
+        city: locationData?.city,
+        latitude: locationData?.latitude,
+        longitude: locationData?.longitude,
+        plusCode: locationData?.plusCode,
+      });
+
       if (response?.error?.startsWith("VERIFICATION_REQUIRED|||")) {
         const parts = response.error.split("|||");
         const token = parts[1];
@@ -62,6 +74,7 @@ export default function useLogin() {
 
       toast.success("مرحباً بك! تم تسجيل دخولك بنجاح.");
       router.push("/");
+      router.refresh();
     },
 
     onError: (error) => {

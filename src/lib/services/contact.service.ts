@@ -57,10 +57,10 @@ export async function addContactService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
-  return { success: true, data: result.data, message: result.Message };
+  return { success: true, data: result.data, message: result.message };
 }
 
 /**
@@ -87,10 +87,10 @@ export async function updateContactService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
-  return { success: true, data: result.data, message: result.Message };
+  return { success: true, data: result.data, message: result.message };
 }
 
 /**
@@ -112,8 +112,8 @@ export async function deleteContactService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
-  return { success: true, data: result.data, message: result.Message };
+  return { success: true, data: result.data, message: result.message };
 }

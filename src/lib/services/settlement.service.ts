@@ -53,7 +53,7 @@ export async function createSettlementCategoryService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   revalidateTag("settlement-categories");
@@ -84,7 +84,7 @@ export async function updateSettlementCategoryService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   revalidateTag("settlement-categories");
@@ -111,7 +111,7 @@ export async function deleteSettlementCategoryService(id: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   revalidateTag("settlement-categories");
@@ -138,7 +138,7 @@ export async function createSettlementRequestService(formData: FormData) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   revalidateTag("all-settlement");
@@ -163,7 +163,7 @@ export async function updateSettlementRequestService(formData: FormData) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   revalidateTag("all-settlement");
@@ -193,7 +193,7 @@ export async function createSettlementSessionService(formData: FormData) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   revalidateTag("all-settlement");
@@ -224,7 +224,7 @@ export async function updateSettlementSessionService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   revalidatePath("/settlement/sessions");

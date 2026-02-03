@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { LoginResponse } from "./lib/types/api";
 import { cookies } from "next/headers";
+import { encrypt } from "./lib/utils/crypto";
 
 // Fetch user profile using access token
 async function fetchUserProfile(accessToken: string) {
@@ -310,11 +311,10 @@ export const authOptions: NextAuthOptions = {
         return session;
       }
 
-      session.accessToken = token.accessToken;
-      session.refreshToken = token.refreshToken;
       session.loginMethod = token.loginMethod;
       session.type = token.type;
       session.roles = token.roles;
+      session.sessionKey = encrypt(token.refreshToken || "");
 
       if (token.profile) {
         session.user = {

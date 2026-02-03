@@ -22,6 +22,7 @@ import { useLocationData } from "@/hooks/use-location-data";
 export default function LoginForm() {
   // Hooks
   const { data: LocationData, isLoading: LocationLoading } = useLocationData();
+  console.log("LocationData: ", LocationData);
   const { login, isPending } = useLogin();
   const { isLoading, error } = useFingerprint();
   // Form setup with validation
@@ -56,7 +57,7 @@ export default function LoginForm() {
                   placeholder="أدخل الهوية"
                   autoComplete="username"
                   className={cn(
-                    fieldState.error && "border-red-500 focus:border-none"
+                    fieldState.error && "border-red-500 focus:border-none",
                   )}
                 />
               </FormControl>
@@ -78,7 +79,7 @@ export default function LoginForm() {
                   autoComplete="current-password"
                   placeholder="أدخل كلمة المرور"
                   className={cn(
-                    fieldState.error && "border-red-500 focus:border-none"
+                    fieldState.error && "border-red-500 focus:border-none",
                   )}
                 />
               </FormControl>

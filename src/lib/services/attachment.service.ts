@@ -44,10 +44,10 @@ export async function addAttachmentCategoryService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
-  return { success: true, data: result.data, message: result.Message };
+  return { success: true, data: result.data, message: result.message };
 }
 
 /**
@@ -73,10 +73,10 @@ export async function updateAttachmentCategoryService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
-  return { success: true, data: result.data, message: result.Message };
+  return { success: true, data: result.data, message: result.message };
 }
 
 /**
@@ -101,8 +101,8 @@ export async function deleteAttachmentCategoryService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
-  return { success: true, data: result.data, message: result.Message };
+  return { success: true, data: result.data, message: result.message };
 }

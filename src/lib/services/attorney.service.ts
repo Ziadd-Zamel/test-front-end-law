@@ -42,7 +42,7 @@ export async function addAttorneyService(formData: FormData) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   revalidatePath("/attorney/list");
@@ -69,7 +69,7 @@ export async function requestAtorneyService(data: AttorneyRequestPayload) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   revalidatePath("/attorney/list");
@@ -92,7 +92,7 @@ export async function revokeAttorneyService(data: AttorneyRevokePayload) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
   revalidatePath("/attorney/attorney-management");
 
@@ -118,7 +118,7 @@ export async function validateAttorneyService(data: AttorneyValidationFields) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -146,7 +146,7 @@ export async function changeAttorneyStatyService(data: changestatuAtornyProps) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
   revalidatePath("/attorney/attorney-management");
 

@@ -7,11 +7,24 @@ import { ThemeProvider } from "./components/theme-provider";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { TokenRefreshProvider } from "./components/token-refresh-provider";
 import DisabledProtection from "./components/disabled-protection";
+import { getAuthHeader } from "@/lib/utils/auth-header";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 
 export default async function Providers({ children }: ProvidersProps) {
+  const session = await getServerSession(authOptions);
+  const token = session?.user ? await getAuthHeader() : null;
+  const baseUrl = process.env.NOTI_URL;
   return (
     <SessionClientProvider>
       <ReactQueryProvider>
+        {token && (
+          <PermissionNotificationListener
+            baseUrl={baseUrl || ""}
+            token={token.token}
+          />
+        )}
+
         <TokenRefreshProvider>
           <DisabledProtection />
           <ThemeProvider
@@ -22,7 +35,6 @@ export default async function Providers({ children }: ProvidersProps) {
           >
             <NuqsAdapter>
               <FingerprintProvider>
-                <PermissionNotificationListener />
                 {children}
                 <Toaster />
               </FingerprintProvider>

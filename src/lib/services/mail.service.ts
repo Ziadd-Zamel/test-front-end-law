@@ -91,7 +91,7 @@ export async function sendMailService({
 
   if (!response.ok) {
     return {
-      message: result.Message,
+      message: result.message,
       success: false,
       IsAttachmentConfirmationError: result.IsAttachmentConfirmationError,
     };
@@ -120,7 +120,7 @@ export async function sendEmployeeMailService({
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -149,7 +149,7 @@ export async function sendAutoMailService({
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -187,7 +187,7 @@ export async function replayMailService({ body }: { body: replayMailBody }) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   revalidateTag("mail-details");
@@ -228,7 +228,7 @@ export async function searchMailService({
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -252,7 +252,7 @@ export async function logMailReadService(mailId: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -276,7 +276,7 @@ export async function updateMessageService(body: updateMessageBody) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
   revalidateTag("mail-details");
 

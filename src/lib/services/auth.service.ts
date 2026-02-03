@@ -55,10 +55,11 @@ export async function registerUserService(
   });
 
   const result = await response.json();
-
+  console.log(response);
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
+  console.log(result);
 
   return result;
 }
@@ -95,7 +96,7 @@ export async function verifyWhatsappCodeService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -128,7 +129,7 @@ export async function verifyEmailCodeService(code: string, visitorId: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -137,7 +138,11 @@ export async function verifyEmailCodeService(code: string, visitorId: string) {
 /**
  * Verify code for forget password
  */
-export async function verifyForgetCodeService(code: string, visitorId: string) {
+export async function verifyForgetCodeService(
+  code: string,
+  visitorId: string,
+  type: string,
+) {
   const cookieStore = await cookies();
   const token = cookieStore.get("forgetPasswordToken")?.value;
 
@@ -153,7 +158,7 @@ export async function verifyForgetCodeService(code: string, visitorId: string) {
     },
     body: JSON.stringify({
       code: code,
-      typeOfGenerate: "ForgetPassword",
+      typeOfGenerate: type,
       visitorId: visitorId,
     }),
   });
@@ -161,7 +166,7 @@ export async function verifyForgetCodeService(code: string, visitorId: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -184,7 +189,7 @@ export async function forgetPasswordService(data: ForgetPasswordFields) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -195,23 +200,25 @@ export async function forgetPasswordService(data: ForgetPasswordFields) {
  */
 export async function resetEmailPasswordService(
   data: ResetEmailPasswordFields,
-  searchParams: { token: string; email: string },
 ) {
-  const { token, email } = searchParams;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("forgetPasswordToken")?.value;
 
+  if (!token) {
+    return { message: "Token not found in cookies", success: false };
+  }
   const { password, confirmPassword } = data;
 
   const requestBody = {
     password,
     confirmPassword,
-    token,
-    email,
   };
 
   const response = await fetch(`${process.env.API}/Reset-Email-Password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(requestBody),
   });
@@ -219,7 +226,7 @@ export async function resetEmailPasswordService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -250,7 +257,7 @@ export async function resetWhatsPasswordService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -281,7 +288,7 @@ export async function sendVerificationCodeService(
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -301,10 +308,11 @@ export async function refreshTokenService(refreshToken: string) {
     }),
   });
   const result = await response.json();
-
+  console.log("resultresult", result);
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
+  console.log(response);
 
   return result;
 }

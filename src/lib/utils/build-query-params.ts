@@ -1,6 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-const VALID_VALUE_REGEX = /^[a-zA-Z0-9_-]+$/;
+// const VALID_VALUE_REGEX = /^[a-zA-Z0-9_-]+$/;
+
+// export function buildQueryParams(params: Record<string, any>) {
+//   const query = new URLSearchParams();
+
+//   Object.entries(params).forEach(([key, value]) => {
+//     if (value === undefined || value === null || value === "") return;
+
+//     if (Array.isArray(value)) {
+//       value.forEach((v) => {
+//         const stringValue = String(v);
+
+//         if (!VALID_VALUE_REGEX.test(stringValue)) return;
+
+//         query.append(`${key}[]`, stringValue);
+//       });
+//     } else {
+//       const stringValue = String(value);
+
+//       if (!VALID_VALUE_REGEX.test(stringValue)) return;
+
+//       query.append(key, stringValue);
+//     }
+//   });
+
+//   return query.toString();
+// }
 
 export function buildQueryParams(params: Record<string, any>) {
   const query = new URLSearchParams();
@@ -10,18 +36,10 @@ export function buildQueryParams(params: Record<string, any>) {
 
     if (Array.isArray(value)) {
       value.forEach((v) => {
-        const stringValue = String(v);
-
-        if (!VALID_VALUE_REGEX.test(stringValue)) return;
-
-        query.append(`${key}[]`, stringValue);
+        query.append(`${key}[]`, String(v));
       });
     } else {
-      const stringValue = String(value);
-
-      if (!VALID_VALUE_REGEX.test(stringValue)) return;
-
-      query.append(key, stringValue);
+      query.append(key, String(value));
     }
   });
 

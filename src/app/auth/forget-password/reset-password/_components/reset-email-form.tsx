@@ -17,19 +17,10 @@ import {
 } from "@/lib/schemas/auth.schema";
 import { PasswordInput } from "@/app/auth/_components/password-input";
 import { useResetEmailPassword } from "@/app/auth/_hooks/use-auth";
-type ResetEmailPasswordFormProps = {
-  token?: string;
-  email?: string;
-};
-export default function ResetEmailPasswordForm({
-  email,
-  token,
-}: ResetEmailPasswordFormProps) {
+
+export default function ResetEmailPasswordForm() {
   // Hooks
-  const { resetEmailPassword, isPending } = useResetEmailPassword({
-    email: email,
-    token: token,
-  });
+  const { resetEmailPassword, isPending } = useResetEmailPassword();
 
   // Form setup with validation
   const form = useForm<ResetEmailPasswordFields>({
@@ -64,7 +55,7 @@ export default function ResetEmailPasswordForm({
                   autoComplete="new-password"
                   placeholder="أدخل كلمة المرور الجديدة"
                   className={cn(
-                    fieldState.error && "border-red-500 focus:border-none"
+                    fieldState.error && "border-red-500 focus:border-none",
                   )}
                 />
               </FormControl>
@@ -86,7 +77,7 @@ export default function ResetEmailPasswordForm({
                   autoComplete="new-password"
                   placeholder="أكد كلمة المرور الجديدة"
                   className={cn(
-                    fieldState.error && "border-red-500 focus:border-none"
+                    fieldState.error && "border-red-500 focus:border-none",
                   )}
                 />
               </FormControl>

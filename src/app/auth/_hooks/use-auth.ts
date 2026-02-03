@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { useFingerprint } from "@/components/providers/components/fingerprint-client";
 import Cookies from "js-cookie";
 import { signOut, useSession } from "next-auth/react";
+import { decrypt } from "@/lib/utils/crypto-client";
 
 // ==================== REGISTER HOOKS ====================
 interface SendVerificationWithLocation extends SendVerificationCodeFields {
@@ -131,6 +132,7 @@ export function useVerifyEmailCode() {
     onSuccess: () => {
       toast.success("تم التحقق من البريد الإلكتروني بنجاح");
       router.push("/dashboard");
+      Cookies.remove("registerToken");
     },
     onError: (error: Error) => {
       toast.error(error.message || "حدث خطأ أثناء التحقق من الرمز");
@@ -151,10 +153,15 @@ export function useVerifyEmailCode() {
 export function useVerifyCode() {
   const router = useRouter();
   const { visitorId } = useFingerprint();
+  const type = Cookies.get("forgetType");
 
   const { isPending, error, mutate, mutateAsync } = useMutation({
     mutationFn: async (code: string) => {
-      const result = await verifyForgetCodeService(code, visitorId || "");
+      const result = await verifyForgetCodeService(
+        code,
+        visitorId || "",
+        type || "",
+      );
 
       if (!result.success) {
         throw new Error(result.message);
@@ -163,11 +170,16 @@ export function useVerifyCode() {
       return result.data;
     },
     onSuccess: () => {
-      toast.success("تم التحقق من رقم واتساب بنجاح");
-      router.push("/auth/forget-password/reset-password/whatsapp");
+      toast.success("تم التحقق من الرمز بنجاح");
+      if (type === "ForgetPasswordEmail") {
+        router.push("/auth/forget-password/reset-password/email");
+      } else {
+        router.push("/auth/forget-password/reset-password/whatsapp");
+      }
+      Cookies.remove("forgetType");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "حدث خطأ أثناء التحقق من رمز واتساب");
+      toast.error(error.message || "حدث خطأ أثناء التحقق من الرمز ");
     },
   });
 
@@ -197,7 +209,13 @@ export function useForgetPassword() {
 
       return result.data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      toast.success("تم إرسال رمز إعادة تعيين كلمة المرور بنجاح!");
+      if (variables.type === "Email") {
+        Cookies.set("forgetType", "ForgetPasswordEmail");
+      } else if (variables.type === "WhatsApp") {
+        Cookies.set("forgetType", "ForgetPasswordWhats");
+      }
       toast.success("تم إرسال رمز إعادة تعيين كلمة المرور بنجاح!");
       Cookies.set("forgetPasswordToken", data.token);
       router.push("/auth/forget-password/reset-password/otp");
@@ -220,25 +238,12 @@ export function useForgetPassword() {
 /**
  * Hook for resetting password via email
  */
-export function useResetEmailPassword(searchParams: {
-  token?: string;
-  email?: string;
-}) {
+export function useResetEmailPassword() {
   const router = useRouter();
 
   const { isPending, error, mutate, mutateAsync } = useMutation({
     mutationFn: async (data: ResetEmailPasswordFields) => {
-      const { token, email } = searchParams;
-
-      if (!token) {
-        throw new Error("Token not found in URL");
-      }
-
-      if (!email) {
-        throw new Error("Email not found in URL");
-      }
-
-      const result = await resetEmailPasswordService(data, { token, email });
+      const result = await resetEmailPasswordService(data);
 
       if (!result.success) {
         throw new Error(result.message);
@@ -344,7 +349,10 @@ export function useRefreshToken() {
 
   const { isPending, error, mutate } = useMutation({
     mutationFn: async () => {
-      const result = await refreshTokenService(session?.refreshToken || "");
+      const refreshToken = session?.sessionKey
+        ? decrypt(session.sessionKey)
+        : "";
+      const result = await refreshTokenService(refreshToken);
       if (!result.success) {
         throw new Error(result.message);
       }

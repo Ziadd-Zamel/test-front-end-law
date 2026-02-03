@@ -31,7 +31,7 @@ export async function generateFile(filepath: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;
@@ -56,7 +56,7 @@ export async function exportDataService(exportType: string, entityId: string) {
   const result = await response.json();
 
   if (!response.ok) {
-    return { message: result.Message, success: false };
+    return { message: result.message, success: false };
   }
 
   return result;

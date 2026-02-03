@@ -42,7 +42,7 @@ export default function OTPForm({
   isVerifyPending,
   isResendPending = false,
   title = "رمز التحقق",
-  description = "أدخل الرمز المرسل إلى بريدك الإلكتروني (6 أرقام).",
+  description = "",
   submitButtonText = "تحقق",
   submitButtonLoadingText = "جار التحقق...",
   resendButtonText = "إعادة الإرسال",
