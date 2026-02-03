@@ -36,15 +36,13 @@ export const usePermissionNotifications = (token: string | null) => {
       toast.info(notification.title, {
         description: notification.message,
       });
-
+      console.log();
       // Refresh token after receiving notification
       try {
-        await refreshToken();
+        if (notification.permissionNotification === 1) {
+          await refreshToken();
+        }
 
-        // Reconnect after successful token refresh
-        console.log("🔄 Reconnecting after token refresh...");
-        await connection.stop();
-        await connection.start();
         console.log("🟢 Reconnected successfully");
       } catch (error) {
         console.error("Failed to refresh token or reconnect:", error);
