@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
   registerUserService,
@@ -10,6 +11,11 @@ import {
   resetWhatsPasswordService,
   sendVerificationCodeService,
   refreshTokenService,
+  updateClient,
+  sendPhoneCodeActivation,
+  activeMail,
+  activePhone,
+  sendEmailCodeActivation,
 } from "@/lib/services/auth.service";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -391,5 +397,206 @@ export function useRefreshToken() {
     error,
     refreshToken: mutate,
     session: session,
+  };
+}
+
+// ==================== VERIFICATION REQUIRED HOOKS ====================
+
+/**
+ * Hook for sending email activation code
+ */
+export function useSendEmailCodeActivation() {
+  const { isPending, error, mutate, mutateAsync } = useMutation({
+    mutationFn: async () => {
+      const result = await sendEmailCodeActivation();
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
+      return result.data;
+    },
+    onSuccess: () => {
+      toast.success("تم إرسال رمز التفعيل إلى بريدك الإلكتروني");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "حدث خطأ أثناء إرسال رمز التفعيل");
+    },
+  });
+
+  return {
+    isPending,
+    error,
+    sendEmailCode: mutate,
+    sendEmailCodeAsync: mutateAsync,
+  };
+}
+
+/**
+ * Hook for sending phone activation code
+ */
+export function useSendPhoneCodeActivation() {
+  const { isPending, error, mutate, mutateAsync } = useMutation({
+    mutationFn: async () => {
+      const result = await sendPhoneCodeActivation();
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
+      return result.data;
+    },
+    onSuccess: () => {
+      toast.success("تم إرسال رمز التفعيل إلى رقم واتساب");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "حدث خطأ أثناء إرسال رمز التفعيل");
+    },
+  });
+
+  return {
+    isPending,
+    error,
+    sendPhoneCode: mutate,
+    sendPhoneCodeAsync: mutateAsync,
+  };
+}
+
+/**
+ * Hook for activating email
+ */
+export function useActiveMail() {
+  const { visitorId } = useFingerprint();
+  const { update, data: session } = useSession();
+
+  const { isPending, error, mutate, mutateAsync } = useMutation({
+    mutationFn: async (code: string) => {
+      const result = await activeMail(code, visitorId || "");
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      toast.success("تم تفعيل البريد الإلكتروني بنجاح");
+      // Update session to reflect email confirmation
+      await update({
+        user: {
+          ...session?.user,
+          emailConfirmed: true,
+        },
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "حدث خطأ أثناء تفعيل البريد الإلكتروني");
+    },
+  });
+
+  return {
+    isPending,
+    error,
+    activeMail: mutate,
+    activeMailAsync: mutateAsync,
+  };
+}
+
+/**
+ * Hook for activating phone number
+ */
+export function useActivePhone() {
+  const { visitorId } = useFingerprint();
+  const { update, data: session } = useSession();
+
+  const { isPending, error, mutate, mutateAsync } = useMutation({
+    mutationFn: async (code: string) => {
+      const result = await activePhone(code, visitorId || "");
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
+      return result.data;
+    },
+    onSuccess: async () => {
+      toast.success("تم تفعيل رقم الهاتف بنجاح");
+      // Update session to reflect phone confirmation
+      await update({
+        user: {
+          ...session?.user,
+          phoneNumberConfirmed: true,
+        },
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "حدث خطأ أثناء تفعيل رقم الهاتف");
+    },
+  });
+
+  return {
+    isPending,
+    error,
+    activePhone: mutate,
+    activePhoneAsync: mutateAsync,
+  };
+}
+
+/**
+ * Hook for updating client information (email or phone)
+ */
+export function useUpdateClient() {
+  const { data: session, update } = useSession();
+  console.log(session);
+  const { isPending, error, mutate, mutateAsync } = useMutation({
+    mutationFn: async ({
+      phoneNumber,
+      email,
+    }: {
+      phoneNumber?: string;
+      email?: string;
+    }) => {
+      const userId = session?.user?.id?.toString();
+
+      if (!userId) {
+        throw new Error("لم يتم العثور على معرف المستخدم");
+      }
+
+      const result = await updateClient(userId, phoneNumber, email);
+      console.log(result.result);
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
+      return { data: result.data, variables: { phoneNumber, email } };
+    },
+    onSuccess: async ({ variables }) => {
+      toast.success("تم تحديث البيانات بنجاح");
+
+      // Update session with new values
+      const updates: any = {};
+
+      if (variables.email) {
+        updates.email = variables.email;
+        updates.emailConfirmed = false;
+      }
+
+      if (variables.phoneNumber) {
+        updates.phoneNumber = variables.phoneNumber;
+        updates.phoneNumberConfirmed = false;
+      }
+
+      await update(updates);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "حدث خطأ أثناء تحديث البيانات");
+    },
+  });
+
+  return {
+    isPending,
+    error,
+    updateClient: mutate,
+    updateClientAsync: mutateAsync,
   };
 }

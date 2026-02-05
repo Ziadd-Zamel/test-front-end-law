@@ -7,7 +7,6 @@ export default async function VerificationRequiredPage() {
   const profile = session?.user;
   const emailConfirmed = profile?.emailConfirmed ?? false;
   const phoneNumberConfirmed = profile?.phoneNumberConfirmed ?? false;
-
   return (
     <VerificationRequired
       emailConfirmed={emailConfirmed}

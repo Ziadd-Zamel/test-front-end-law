@@ -30,7 +30,7 @@ export default function VerificationRequired({
   const userEmail = session?.user?.email || "";
   const userPhone = session?.user?.phoneNumber || "";
   const userId = session?.user?.id || 0;
-
+  console.log(session);
   const cards = [
     {
       type: "email",
@@ -80,7 +80,7 @@ export default function VerificationRequired({
                   "transition-all duration-300 border shadow-sm hover:shadow-md rounded-2xl",
                   confirmed
                     ? "border-green-200 bg-green-50/30"
-                    : "border-red-200 bg-red-50/30"
+                    : "border-red-200 bg-red-50/30",
                 )}
               >
                 <CardHeader>
@@ -90,7 +90,7 @@ export default function VerificationRequired({
                         "p-3 rounded-xl transition-colors",
                         confirmed
                           ? "bg-green-100 text-green-600"
-                          : "bg-red-100 text-red-600"
+                          : "bg-red-100 text-red-600",
                       )}
                     >
                       <Icon className="w-5 h-5" />
@@ -100,7 +100,7 @@ export default function VerificationRequired({
                         "text-sm font-medium px-3 py-1 rounded-full",
                         confirmed
                           ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
+                          : "bg-red-100 text-red-700",
                       )}
                     >
                       {confirmed ? "تم التحقق" : "في انتظار التحقق"}
@@ -161,7 +161,6 @@ export default function VerificationRequired({
         isOpen={isWhatsAppDialogOpen}
         onClose={() => setIsWhatsAppDialogOpen(false)}
         userPhone={userPhone}
-        userId={userId}
       />
     </div>
   );

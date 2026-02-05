@@ -2,11 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useFingerprint } from "@/components/providers/components/fingerprint-client";
+import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
 import {
@@ -19,151 +16,67 @@ import {
 import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle2, ArrowLeft } from "lucide-react";
 import OTPForm from "@/app/auth/_components/otp-form";
-import { sendWhatsAppCode } from "./actions/send-whatsapp.action";
-import { verifyWhatsAppCode } from "./actions/verify-whatsapp.action";
-import { updateUser } from "./actions/update-phone.action";
+import {
+  useActivePhone,
+  useSendPhoneCodeActivation,
+  useUpdateClient,
+} from "@/app/auth/_hooks/use-auth";
 
 interface WhatsAppVerificationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   userPhone: string;
-  userId: number;
 }
 
 export default function WhatsAppVerificationDialog({
   isOpen,
   onClose,
   userPhone,
-  userId,
 }: WhatsAppVerificationDialogProps) {
   const [step, setStep] = useState<"send" | "verify" | "update">("send");
   const [newPhone, setNewPhone] = useState("");
-  const { data: session, update } = useSession();
   const router = useRouter();
-  const { visitorId } = useFingerprint();
 
-  // Send WhatsApp OTP mutation
-  const sendWhatsAppMutation = useMutation({
-    mutationFn: async () => {
-      const result = await sendWhatsAppCode();
-      if (result.httpStatus >= 400) {
-        throw new Error(result.message || "no error message");
-      }
-    },
-    onSuccess: () => {
-      toast.success("تم إرسال رمز التحقق إلى واتساب");
-      setStep("verify");
-    },
-
-    onError: (error) => {
-      toast.error(error?.message || "حدث خطأ أثناء إرسال الرمز");
-    },
-  });
-
-  // Verify WhatsApp OTP mutation
-  const verifyWhatsAppMutation = useMutation({
-    mutationFn: async (code: string) => {
-      const result = await verifyWhatsAppCode(code, visitorId || "");
-      if (result.httpStatus >= 400) {
-        throw new Error(result.message || "no error message");
-      }
-      return result;
-    },
-
-    onSuccess: async (result) => {
-      console.log("\n📱 [WhatsApp Verification] Success!");
-      console.log("Result:", result);
-
-      toast.success("تم التحقق من واتساب بنجاح");
-
-      // Check if email is verified from current session
-      const isEmailVerified = session?.user?.emailConfirmed || false;
-      console.log("📧 Email Verified:", isEmailVerified);
-
-      // Only update tokens if BOTH WhatsApp and email are verified
-      if (
-        isEmailVerified &&
-        result.data?.accessToken &&
-        result.data?.refreshToken
-      ) {
-        console.log("✅ Both WhatsApp and email verified!");
-        console.log("🔑 New tokens received from API:");
-        console.log(
-          "New Access Token:",
-          result.data.accessToken.substring(0, 20) + "..."
-        );
-        console.log(
-          "New Refresh Token:",
-          result.data.refreshToken.substring(0, 20) + "..."
-        );
-        console.log("🔄 Calling session update with new tokens...");
-
-        await update({
-          accessToken: result.data.accessToken,
-          refreshToken: result.data.refreshToken,
-        });
-
-        console.log("✅ Session updated with new tokens");
-      } else if (!isEmailVerified) {
-        console.log("⚠️ Email not verified yet, skipping token update");
-        console.log("🔄 Only refreshing profile data...");
-
-        // Just refresh the profile to show WhatsApp is now verified
-        await update();
-
-        console.log("✅ Profile refreshed (no token update)");
-      } else {
-        console.log("ℹ️ No new tokens in result, just refetching profile");
-        await update();
-        console.log("✅ Profile refetch completed");
-      }
-
-      onClose();
-      router.refresh();
-    },
-    onError: (error) => {
-      console.error("❌ [WhatsApp Verification] Error:", error);
-      toast.error(error?.message || "حدث خطأ أثناء التحقق من الرمز");
-    },
-  });
+  // Use the new hooks
+  const { isPending: isSendingCode, sendPhoneCode } =
+    useSendPhoneCodeActivation();
+  const { isPending: isVerifying, activePhone } = useActivePhone();
+  const { isPending: isUpdating, updateClient } = useUpdateClient();
 
   const handleSendCode = () => {
-    sendWhatsAppMutation.mutate();
+    sendPhoneCode(undefined, {
+      onSuccess: () => {
+        setStep("verify");
+      },
+    });
   };
 
   const handleVerifyCode = (code: string) => {
-    verifyWhatsAppMutation.mutate(code);
+    activePhone(code, {
+      onSuccess: () => {
+        onClose();
+        router.refresh();
+      },
+    });
   };
-
-  // Update phone mutation
-  const updatePhoneMutation = useMutation({
-    mutationFn: async (email: string) => {
-      const result = await updateUser(userId, email);
-
-      if (!result.success) {
-        throw new Error(result.message || "no error message");
-      }
-    },
-    onSuccess: async () => {
-      toast.success("تم تحديث رقم الهاتف بنجاح");
-      await update();
-      setStep("send");
-
-      onClose();
-      router.refresh();
-    },
-
-    onError: (error) => {
-      toast.error(error?.message || "حدث خطأ أثناء تحديث رقم الهاتف");
-    },
-  });
 
   const handleUpdatePhone = () => {
     if (!newPhone.trim()) {
       toast.error("يرجى إدخال رقم الهاتف الجديد");
       return;
     }
-    updatePhoneMutation.mutate(newPhone.trim());
+
+    updateClient(
+      { phoneNumber: newPhone.trim() },
+      {
+        onSuccess: () => {
+          setStep("send");
+          setNewPhone("");
+          onClose();
+          router.refresh();
+        },
+      },
+    );
   };
 
   const handleClose = () => {
@@ -188,8 +101,8 @@ export default function WhatsAppVerificationDialog({
             {step === "send"
               ? "سيتم إرسال رمز التحقق إلى واتساب"
               : step === "verify"
-              ? "أدخل الرمز المرسل إلى واتساب"
-              : "تحديث رقم الهاتف"}
+                ? "أدخل الرمز المرسل إلى واتساب"
+                : "تحديث رقم الهاتف"}
           </DialogDescription>
         </DialogHeader>
 
@@ -212,10 +125,10 @@ export default function WhatsAppVerificationDialog({
               <div className="space-y-3">
                 <Button
                   onClick={handleSendCode}
-                  disabled={sendWhatsAppMutation.isPending}
+                  disabled={isSendingCode}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12"
                 >
-                  {sendWhatsAppMutation.isPending ? (
+                  {isSendingCode ? (
                     "جار الإرسال..."
                   ) : (
                     <>
@@ -253,7 +166,7 @@ export default function WhatsAppVerificationDialog({
 
               <OTPForm
                 onVerify={handleVerifyCode}
-                isVerifyPending={verifyWhatsAppMutation.isPending}
+                isVerifyPending={isVerifying}
                 title="رمز التحقق"
                 description="أدخل الرمز المرسل إلى واتساب (6 أرقام)."
                 submitButtonText="تحقق من الرمز"
@@ -303,10 +216,10 @@ export default function WhatsAppVerificationDialog({
                 </Button>
                 <Button
                   onClick={handleUpdatePhone}
-                  disabled={updatePhoneMutation.isPending}
+                  disabled={isUpdating}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  {updatePhoneMutation.isPending ? "جار التحديث..." : "تحديث"}
+                  {isUpdating ? "جار التحديث..." : "تحديث"}
                 </Button>
               </div>
             </div>

@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useFingerprint } from "@/components/providers/components/fingerprint-client";
 import { LocationData } from "@/lib/api/location.api";
+import {
+  requestNotificationPermission,
+  shouldAskNotificationPermission,
+} from "@/hooks/browser-notification";
 
 const SESSION_OWNER_KEY = "session-owner-id";
 
@@ -64,7 +68,7 @@ export default function useLogin() {
       return response;
     },
 
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data && "requiresVerification" in data && data.requiresVerification)
         return;
 
@@ -73,6 +77,14 @@ export default function useLogin() {
       sessionStorage.setItem(SESSION_OWNER_KEY, tabId);
 
       toast.success("مرحباً بك! تم تسجيل دخولك بنجاح.");
+      if (shouldAskNotificationPermission()) {
+        try {
+          const granted = await requestNotificationPermission();
+          if (granted) {
+            toast.success("تم تفعيل الإشعارات");
+          }
+        } catch {}
+      }
       router.push("/");
       router.refresh();
     },

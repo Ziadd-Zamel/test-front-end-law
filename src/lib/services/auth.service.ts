@@ -9,6 +9,8 @@ import {
   ResetWhatsPasswordFields,
   SendVerificationCodeFields,
 } from "@/lib/schemas/auth.schema";
+import { getAuthHeader } from "../utils/auth-header";
+import { revalidatePath } from "next/cache";
 
 // ==================== INTERFACES ====================
 
@@ -308,11 +310,146 @@ export async function refreshTokenService(refreshToken: string) {
     }),
   });
   const result = await response.json();
-  console.log("resultresult", result);
+
   if (!response.ok) {
     return { message: result.message, success: false };
   }
-  console.log(response);
+
+  return result;
+}
+
+// Send code to active the email
+export async function sendEmailCodeActivation() {
+  const token = await getAuthHeader();
+  console.log("tokentoken", token);
+  const response = await fetch(
+    `${process.env.API}/Verify/Resend-Email-Code/RegisterUserEmail`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token.token}`,
+      },
+    },
+  );
+  const result = await response.json();
+  console.log("resultresult", response);
+  console.log("resultresult", result);
+
+  if (!response.ok) {
+    return { message: result.message, success: false };
+  }
+
+  return result;
+}
+
+// Send code to active the phone number
+export async function sendPhoneCodeActivation() {
+  const token = await getAuthHeader();
+
+  const response = await fetch(
+    `${process.env.API}/Verify/Resend-WhatsApp-Code/RegisterUserWhats`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token.token}`,
+      },
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    return { message: result.message, success: false };
+  }
+
+  return result;
+}
+// active email
+export async function activeMail(code: string, visitorId: string) {
+  const token = await getAuthHeader();
+
+  const response = await fetch(`${process.env.API}/Verify/Code`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token.token}`,
+    },
+    body: JSON.stringify({
+      code: code,
+      visitorId: visitorId,
+      typeOfGenerate: "RegisterUserEmail",
+    }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    return { message: result.message, success: false };
+  }
+  revalidatePath("/verification-required");
+
+  return result;
+}
+// active phone number
+export async function activePhone(code: string, visitorId: string) {
+  const token = await getAuthHeader();
+
+  const response = await fetch(`${process.env.API}/Verify/Code`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token.token}`,
+    },
+    body: JSON.stringify({
+      code: code,
+      visitorId: visitorId,
+      typeOfGenerate: "RegisterUserWhats",
+    }),
+  });
+  const result = await response.json();
+
+  if (!response.ok) {
+    return { message: result.message, success: false };
+  }
+  revalidatePath("/verification-required");
+
+  return result;
+}
+// active phone number
+export async function updateClient(
+  userId: string,
+  phoneNumber?: string,
+  email?: string,
+) {
+  const token = await getAuthHeader();
+
+  const formData = new FormData();
+
+  if (email) {
+    formData.append("Email", email);
+  }
+
+  if (phoneNumber) {
+    formData.append("PhoneNumber", phoneNumber);
+  }
+
+  const response = await fetch(`${process.env.API}/Client/Update/${userId}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token.token}`,
+    },
+    body: formData,
+  });
+
+  const result = await response.json();
+  console.log("resultresult", response);
+  console.log("resultresult", result);
+  if (!response.ok) {
+    return { message: result.message, success: false, result };
+  }
+  revalidatePath("/verification-required");
 
   return result;
 }

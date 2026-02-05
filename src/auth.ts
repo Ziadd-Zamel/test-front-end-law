@@ -67,6 +67,7 @@ export const authOptions: NextAuthOptions = {
           if (!response.ok) {
             throw new Error(result.message || `HTTP error! ${response.status}`);
           }
+          console.log("-login-result", result);
 
           if (result.data.verify) {
             throw new Error(
@@ -137,7 +138,7 @@ export const authOptions: NextAuthOptions = {
           });
 
           const result = await response.json();
-
+          console.log("Verify", result);
           if (!response.ok) {
             throw new Error(
               result.message || `HTTP error! status: ${response.status}`,
@@ -167,7 +168,7 @@ export const authOptions: NextAuthOptions = {
             message: result.message || "Verification successful",
             loginMethod: "verification-code",
             type: result.data.type,
-            roles: result.data.roles,
+            roles: result.data.role,
           };
         } catch (error) {
           throw new Error(
@@ -190,6 +191,7 @@ export const authOptions: NextAuthOptions = {
       // First login
       if (user) {
         const profileData = await fetchUserProfile(user.token || "");
+        console.log("Verify", profileData);
 
         return {
           ...token,
@@ -215,6 +217,15 @@ export const authOptions: NextAuthOptions = {
         };
       }
 
+      if (trigger === "update" && session?.user) {
+        return {
+          ...token,
+          profile: {
+            ...token.profile,
+            ...session.user,
+          },
+        };
+      }
       // ✅ CHECK SERVER TOKEN EXPIRY - Auto refresh if expired
       const cookiesStore = await cookies();
       const serverExpiresAt = cookiesStore.get(

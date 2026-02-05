@@ -15,32 +15,58 @@ export default async function Providers({ children }: ProvidersProps) {
   const session = await getServerSession(authOptions);
   const token = session?.user ? await getAuthHeader() : null;
   const baseUrl = process.env.NOTI_URL;
+
+  // Check verification status
+  const profile = session?.user;
+  const emailConfirmed = profile?.emailConfirmed ?? false;
+  const phoneNumberConfirmed = profile?.phoneNumberConfirmed ?? false;
+  const isVerified = emailConfirmed || phoneNumberConfirmed;
+
   return (
     <SessionClientProvider>
       <ReactQueryProvider>
-        {token && (
+        {token && isVerified && (
           <PermissionNotificationListener
             baseUrl={baseUrl || ""}
             token={token.token}
           />
         )}
 
-        <TokenRefreshProvider>
-          <DisabledProtection />
-          <ThemeProvider
-            defaultTheme="light"
-            attribute="class"
-            enableSystem={false}
-            storageKey="next-theme"
-          >
-            <NuqsAdapter>
-              <FingerprintProvider>
-                {children}
-                <Toaster />
-              </FingerprintProvider>
-            </NuqsAdapter>
-          </ThemeProvider>
-        </TokenRefreshProvider>
+        {isVerified ? (
+          <TokenRefreshProvider>
+            <DisabledProtection />
+            <ThemeProvider
+              defaultTheme="light"
+              attribute="class"
+              enableSystem={false}
+              storageKey="next-theme"
+            >
+              <NuqsAdapter>
+                <FingerprintProvider>
+                  {children}
+                  <Toaster />
+                </FingerprintProvider>
+              </NuqsAdapter>
+            </ThemeProvider>
+          </TokenRefreshProvider>
+        ) : (
+          <>
+            <DisabledProtection />
+            <ThemeProvider
+              defaultTheme="light"
+              attribute="class"
+              enableSystem={false}
+              storageKey="next-theme"
+            >
+              <NuqsAdapter>
+                <FingerprintProvider>
+                  {children}
+                  <Toaster />
+                </FingerprintProvider>
+              </NuqsAdapter>
+            </ThemeProvider>
+          </>
+        )}
       </ReactQueryProvider>
     </SessionClientProvider>
   );

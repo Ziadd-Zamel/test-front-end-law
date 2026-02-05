@@ -2,11 +2,9 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useFingerprint } from "@/components/providers/components/fingerprint-client";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -19,9 +17,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Mail, CheckCircle2, ArrowLeft } from "lucide-react";
 import OTPForm from "@/app/auth/_components/otp-form";
-import { sendEmailCode } from "./actions/send-email.action";
-import { verifyEmailCode } from "./actions/verify-email.action";
-import { updateUser } from "./actions/update-phone.action";
+import {
+  useActiveMail,
+  useSendEmailCodeActivation,
+  useUpdateClient,
+} from "@/app/auth/_hooks/use-auth";
 
 interface EmailVerificationDialogProps {
   isOpen: boolean;
@@ -34,135 +34,64 @@ export default function EmailVerificationDialog({
   isOpen,
   onClose,
   userEmail,
-  userId,
 }: EmailVerificationDialogProps) {
   const [step, setStep] = useState<"send" | "verify" | "update">("send");
   const [newEmail, setNewEmail] = useState("");
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
-  const { visitorId } = useFingerprint();
 
-  // Send email OTP mutation
-  const sendEmailMutation = useMutation({
-    mutationFn: async () => {
-      const result = await sendEmailCode();
-
-      if (result.httpStatus >= 400) {
-        throw new Error(result.message || "no error message");
-      }
-    },
-    onSuccess: () => {
-      toast.success("تم إرسال رمز التحقق إلى بريدك الإلكتروني");
-      setStep("verify");
-    },
-
-    onError: (error) => {
-      toast.error(error?.message || "حدث خطأ أثناء إرسال الرمز");
-    },
-  });
-
-  // Verify email OTP mutation
-  const verifyEmailMutation = useMutation({
-    mutationFn: async (code: string) => {
-      const result = await verifyEmailCode(code, visitorId || "");
-      if (result.httpStatus >= 400) {
-        throw new Error(result.message || "no error message");
-      }
-      return result;
-    },
-    onSuccess: async (result) => {
-      console.log("\n📧 [Email Verification] Success!");
-      console.log("Result:", result);
-
-      toast.success("تم التحقق من البريد الإلكتروني بنجاح");
-
-      // Check if WhatsApp is verified from current session
-      const isWhatsAppVerified = session?.user?.phoneNumberConfirmed || false;
-      console.log("📱 WhatsApp Verified:", isWhatsAppVerified);
-
-      // Only update tokens if BOTH email and WhatsApp are verified
-      if (
-        isWhatsAppVerified &&
-        result.data?.accessToken &&
-        result.data?.refreshToken
-      ) {
-        console.log("✅ Both email and WhatsApp verified!");
-        console.log("🔑 New tokens received from API:");
-        console.log(
-          "New Access Token:",
-          result.data.accessToken.substring(0, 20) + "..."
-        );
-        console.log(
-          "New Refresh Token:",
-          result.data.refreshToken.substring(0, 20) + "..."
-        );
-        console.log("🔄 Calling session update with new tokens...");
-
-        await update({
-          accessToken: result.data.accessToken,
-          refreshToken: result.data.refreshToken,
-        });
-
-        console.log("✅ Session updated with new tokens");
-      } else if (!isWhatsAppVerified) {
-        console.log("⚠️ WhatsApp not verified yet, skipping token update");
-        console.log("🔄 Only refreshing profile data...");
-
-        // Just refresh the profile to show email is now verified
-        await update();
-
-        console.log("✅ Profile refreshed (no token update)");
-      } else {
-        console.log("ℹ️ No new tokens in result, just refetching profile");
-        await update();
-        console.log("✅ Profile refetch completed");
-      }
-
-      onClose();
-      router.refresh();
-    },
-    onError: (error) => {
-      console.error("❌ [Email Verification] Error:", error);
-      toast.error(error?.message || "حدث خطأ أثناء التحقق من الرمز");
-    },
-  });
+  // Use the new hooks
+  const { isPending: isSendingCode, sendEmailCode } =
+    useSendEmailCodeActivation();
+  const { isPending: isVerifying, activeMail } = useActiveMail();
+  const { isPending: isUpdating, updateClient } = useUpdateClient();
 
   const handleSendCode = () => {
-    sendEmailMutation.mutate();
+    sendEmailCode(undefined, {
+      onSuccess: () => {
+        setStep("verify");
+      },
+    });
   };
 
   const handleVerifyCode = (code: string) => {
-    verifyEmailMutation.mutate(code);
+    activeMail(code, {
+      onSuccess: () => {
+        console.log("\n📧 [Email Verification] Success!");
+
+        // Check if WhatsApp is verified from current session
+        const isWhatsAppVerified = session?.user?.phoneNumberConfirmed || false;
+        console.log("📱 WhatsApp Verified:", isWhatsAppVerified);
+
+        if (isWhatsAppVerified) {
+          console.log("✅ Both email and WhatsApp verified!");
+        } else {
+          console.log("⚠️ WhatsApp not verified yet");
+        }
+
+        onClose();
+        router.refresh();
+      },
+    });
   };
-
-  // Update email mutation
-  const updateEmailMutation = useMutation({
-    mutationFn: async (email: string) => {
-      const result = await updateUser(userId, "", email);
-
-      if (!result.success) {
-        throw new Error(result.message || "no error message");
-      }
-    },
-    onSuccess: async () => {
-      toast.success("تم تحديث البريد الإلكتروني بنجاح");
-      await update();
-      setStep("send");
-      onClose();
-      router.refresh();
-    },
-
-    onError: (error) => {
-      toast.error(error?.message || "حدث خطأ أثناء تحديث البريد الإلكتروني");
-    },
-  });
 
   const handleUpdateEmail = () => {
     if (!newEmail.trim()) {
       toast.error("يرجى إدخال البريد الإلكتروني الجديد");
       return;
     }
-    updateEmailMutation.mutate(newEmail.trim());
+
+    updateClient(
+      { email: newEmail.trim() },
+      {
+        onSuccess: () => {
+          setStep("send");
+          setNewEmail("");
+          onClose();
+          router.refresh();
+        },
+      },
+    );
   };
 
   const handleClose = () => {
@@ -187,8 +116,8 @@ export default function EmailVerificationDialog({
             {step === "send"
               ? "سيتم إرسال رمز التحقق إلى بريدك الإلكتروني"
               : step === "verify"
-              ? "أدخل الرمز المرسل إلى بريدك الإلكتروني"
-              : "تحديث البريد الإلكتروني"}
+                ? "أدخل الرمز المرسل إلى بريدك الإلكتروني"
+                : "تحديث البريد الإلكتروني"}
           </DialogDescription>
         </DialogHeader>
 
@@ -211,10 +140,10 @@ export default function EmailVerificationDialog({
               <div className="space-y-3">
                 <Button
                   onClick={handleSendCode}
-                  disabled={sendEmailMutation.isPending}
+                  disabled={isSendingCode}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12"
                 >
-                  {sendEmailMutation.isPending ? (
+                  {isSendingCode ? (
                     "جار الإرسال..."
                   ) : (
                     <>
@@ -252,7 +181,7 @@ export default function EmailVerificationDialog({
 
               <OTPForm
                 onVerify={handleVerifyCode}
-                isVerifyPending={verifyEmailMutation.isPending}
+                isVerifyPending={isVerifying}
                 title="رمز التحقق"
                 description="أدخل الرمز المرسل إلى بريدك الإلكتروني (6 أرقام)."
                 submitButtonText="تحقق من الرمز"
@@ -303,10 +232,10 @@ export default function EmailVerificationDialog({
                 </Button>
                 <Button
                   onClick={handleUpdateEmail}
-                  disabled={updateEmailMutation.isPending}
+                  disabled={isUpdating}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  {updateEmailMutation.isPending ? "جار التحديث..." : "تحديث"}
+                  {isUpdating ? "جار التحديث..." : "تحديث"}
                 </Button>
               </div>
             </div>

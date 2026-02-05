@@ -4,6 +4,13 @@ import { useEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import { toast } from "sonner";
 import { useRefreshToken } from "@/app/auth/_hooks/use-auth";
+import { showPushNotification } from "@/hooks/browser-notification";
+
+interface PermissionNotification {
+  title: string;
+  message: string;
+  permissionNotification?: number;
+}
 
 export const usePermissionNotifications = (token: string | null) => {
   const { refreshToken } = useRefreshToken();
@@ -23,45 +30,40 @@ export const usePermissionNotifications = (token: string | null) => {
 
     connection
       .start()
-      .then(() => {
-        console.log("🟢 Connected to SignalR");
-      })
-      .catch((error) => {
-        console.error("SignalR connection error:", error);
-      });
+      .then(() => console.log("🟢 SignalR connected"))
+      .catch((err) => console.error("SignalR connection failed", err));
 
-    connection.on("ReceiveNotification", async (notification) => {
-      console.log(notification);
+    connection.on(
+      "ReceiveNotification",
+      async (notification: PermissionNotification) => {
+        // In-app toast
+        toast.info(notification.title, {
+          description: notification.message,
+        });
 
-      toast.info(notification.title, {
-        description: notification.message,
-      });
-      console.log();
-      // Refresh token after receiving notification
-      try {
+        // Browser push
+        showPushNotification({
+          title: notification.title,
+          message: notification.message,
+        });
+
+        // Token refresh if required
         if (notification.permissionNotification === 1) {
-          await refreshToken();
+          try {
+            refreshToken();
+          } catch (err) {
+            console.error("Token refresh failed", err);
+          }
         }
+      },
+    );
 
-        console.log("🟢 Reconnected successfully");
-      } catch (error) {
-        console.error("Failed to refresh token or reconnect:", error);
-      }
-    });
+    connection.onreconnecting(() => console.warn("⚠️ SignalR reconnecting..."));
 
-    // Handle reconnection events
-    connection.onreconnected((connectionId) => {
-      console.log("🔄 Reconnected to SignalR", connectionId);
-    });
-
-    connection.onreconnecting((error) => {
-      console.log("⚠️ Attempting to reconnect...", error);
-    });
+    connection.onreconnected((id) => console.log("🔄 SignalR reconnected", id));
 
     return () => {
-      connection.stop().then(() => {
-        console.log("🔴 Disconnected from SignalR");
-      });
+      connection.stop().then(() => console.log("🔴 SignalR disconnected"));
     };
   }, [token, refreshToken]);
 };
