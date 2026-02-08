@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-export const getUserPermissions = async (userId: number) => {
+export const getUserPermissions = async (userId: string) => {
   const response = await fetch(`/api/employee-permission?userId=${userId}`, {
     method: "GET",
   });
@@ -12,7 +12,7 @@ export const getUserPermissions = async (userId: number) => {
   return response.json();
 };
 
-export function useEmployeePermissions(userId: number) {
+export function useEmployeePermissions(userId: string) {
   return useQuery({
     queryKey: ["employee-permission", userId],
     queryFn: () => getUserPermissions(userId),

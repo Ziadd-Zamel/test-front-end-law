@@ -48,13 +48,7 @@ export const usePermissionNotifications = (token: string | null) => {
         });
 
         // Token refresh if required
-        if (notification.permissionNotification === 1) {
-          try {
-            refreshToken();
-          } catch (err) {
-            console.error("Token refresh failed", err);
-          }
-        }
+        refreshToken();
       },
     );
 

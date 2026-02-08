@@ -4,8 +4,8 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface UpdatePermissionsPayload {
-  UserId: number;
-  PermissionIds: number[];
+  UserId: string;
+  PermissionIds: string[];
 }
 
 export async function updateUserPermissions(payload: UpdatePermissionsPayload) {

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useEmployees } from "@/hooks/use-employee";
 import { useEmployeePermissions } from "@/hooks/use-employee-permissions";
@@ -22,6 +21,8 @@ export default function AddPermissions({
 }: {
   permissions: Permission[];
 }) {
+  const [selectId, setSelectId] = useState<number>(1);
+
   // Get employees
   const { data: employees, isLoading: isLoadingEmployees } = useEmployees();
 
@@ -29,14 +30,14 @@ export default function AddPermissions({
   const { isPending, updatePermissions } = useUpdatePermissions();
 
   // Selected employee ID
-  const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
 
   // Selected permissions IDs
-  const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
   // Get permissions of the selected employee
   const { data: permissionsData, isLoading: isLoadingPermissions } =
-    useEmployeePermissions(selectedEmployee ?? 0);
+    useEmployeePermissions(selectedEmployee ?? "");
 
   // Sync API permission data into the selectedPermissions state
   useEffect(() => {
@@ -50,17 +51,18 @@ export default function AddPermissions({
   }, [permissionsData]);
 
   // Add/remove permission from state
-  const handlePermissionChange = (permissionId: number) => {
+  const handlePermissionChange = (permissionId: string) => {
     setSelectedPermissions((prev) =>
       prev.includes(permissionId)
         ? prev.filter((id) => id !== permissionId)
-        : [...prev, permissionId]
+        : [...prev, permissionId],
     );
   };
 
   // Submit handler
   const handleSubmit = async () => {
     if (!selectedEmployee) return;
+
     updatePermissions(
       {
         UserId: selectedEmployee,
@@ -70,8 +72,9 @@ export default function AddPermissions({
         onSuccess: () => {
           setSelectedEmployee(null);
           setSelectedPermissions([]);
+          setSelectId((prev) => prev + 1);
         },
-      }
+      },
     );
   };
 
@@ -82,106 +85,101 @@ export default function AddPermissions({
   };
 
   return (
-    <div className="w-full box-container">
-      <div className="max-w-lg mx-auto py-5 ">
-        <div className="space-y-6 w-full p-5 bg-white rounded-2xl shadow-md">
-          <div className="space-y-1 mb-4 text-center">
-            <h2 className="text-xl font-semibold text-blue-600">
-              إدارة صلاحيات الموظفين
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              قم باختيار الموظف من القائمة، ثم حدّد الصلاحيات المسموح بها له.
-            </p>
-          </div>
-          {/* === Employee Selector === */}
-          {isLoadingEmployees ? (
-            <Skeleton className="h-10 w-full" />
-          ) : (
-            <Select
-              value={selectedEmployee?.toString() || ""}
-              onValueChange={(value) => setSelectedEmployee(Number(value))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="اختر الموظف" />
-              </SelectTrigger>
+    <div className="space-y-6 p-6 bg-white rounded-lg shadow">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold">إدارة صلاحيات الموظفين</h2>
+        <p className="text-gray-600">
+          قم باختيار الموظف من القائمة، ثم حدّد الصلاحيات المسموح بها له.
+        </p>
+      </div>
 
+      {/* === Employee Selector === */}
+      {isLoadingEmployees ? (
+        <Skeleton className="h-10 w-full" />
+      ) : (
+        <div className="space-y-2">
+          <Label>اختر الموظف</Label>
+          <Select
+            value={selectedEmployee ?? undefined}
+            onValueChange={(value) => setSelectedEmployee(value)}
+            key={selectId}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="-- اختر موظف --" />
+            </SelectTrigger>
+            <SelectContent>
               {/* Loaded employee list */}
-              <SelectContent>
-                {employees?.data.map((emp: Employee) => (
-                  <SelectItem key={emp.id} value={emp.id.toString()}>
-                    {emp.fullName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+              {employees?.data.map((emp: Employee) => (
+                <SelectItem key={emp.id} value={emp.id}>
+                  {emp.fullName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
-          {/* Permissions Section*/}
-          {selectedEmployee && (
-            <div className="space-y-2">
-              <p className="font-semibold">صلاحيات الموظف</p>
+      {/* Permissions Section*/}
+      {selectedEmployee && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">صلاحيات الموظف</h3>
 
-              {/* Permissions loading skeleton */}
-              {isLoadingPermissions ? (
-                <div className="max-h-64 overflow-y-auto border rounded-md p-2 space-y-4 grid grid-cols-2 py-2">
-                  {[...Array(24)].map((_, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <Skeleton className="h-4 w-4 rounded" />
-                      <Skeleton className="h-4 w-24" />
-                    </div>
-                  ))}
+          {/* Permissions loading skeleton */}
+          {isLoadingPermissions ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(24)].map((_, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 w-32" />
                 </div>
-              ) : (
-                // List of all permissions with checkboxes
-                <div className="max-h-64 overflow-y-auto border rounded-md p-2 space-y-4 grid grid-cols-2 py-2">
-                  {permissions.map((perm: Permission) => (
-                    <div key={perm.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={selectedPermissions.includes(perm.id)}
-                        onCheckedChange={() => handlePermissionChange(perm.id)}
-                        id={`perm-${perm.id}`}
-                      />
-                      <Label
-                        htmlFor={`perm-${perm.id}`}
-                        className="cursor-pointer"
-                      >
-                        {perm.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
-          )}
-
-          {/*Action Buttons*/}
-          {selectedEmployee && (
-            <div className="flex gap-2">
-              <Button
-                disabled={isPending}
-                onClick={handleSubmit}
-                className="flex-1"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    جاري الحفظ
-                  </>
-                ) : (
-                  " حفظ التغييرات"
-                )}
-              </Button>
-              <Button
-                onClick={handleCancel}
-                variant="outline"
-                className="flex-1"
-              >
-                إلغاء
-              </Button>
+          ) : (
+            // List of all permissions with checkboxes
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {permissions.map((perm: Permission) => (
+                <div
+                  key={perm.id}
+                  className="flex items-center gap-2 p-2 rounded hover:bg-gray-50"
+                >
+                  <Checkbox
+                    checked={selectedPermissions.includes(perm.id.toString())}
+                    onCheckedChange={() =>
+                      handlePermissionChange(perm.id.toString())
+                    }
+                    id={`perm-${perm.id}`}
+                  />
+                  <Label
+                    htmlFor={`perm-${perm.id}`}
+                    className="cursor-pointer flex-1"
+                  >
+                    {perm.name}
+                  </Label>
+                </div>
+              ))}
             </div>
           )}
         </div>
-      </div>
+      )}
+
+      {/*Action Buttons*/}
+      {selectedEmployee && (
+        <div className="flex gap-3 justify-end pt-4 border-t">
+          <Button onClick={handleSubmit} disabled={isPending}>
+            {isPending ? (
+              <>
+                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                جاري الحفظ
+              </>
+            ) : (
+              "حفظ التغييرات"
+            )}
+          </Button>
+          <Button variant="outline" onClick={handleCancel} disabled={isPending}>
+            إلغاء
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
