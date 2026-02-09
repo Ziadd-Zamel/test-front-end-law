@@ -359,9 +359,9 @@ export async function sendPhoneCodeActivation() {
   );
 
   const result = await response.json();
-
+  console.log("result", result);
   if (!response.ok) {
-    return { message: result.message, success: false };
+    return { message: result.message, success: result.success };
   }
 
   return result;

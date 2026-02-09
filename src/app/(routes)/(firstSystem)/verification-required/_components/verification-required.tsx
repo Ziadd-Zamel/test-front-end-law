@@ -30,7 +30,6 @@ export default function VerificationRequired({
   const userEmail = session?.user?.email || "";
   const userPhone = session?.user?.phoneNumber || "";
   const userId = session?.user?.id || 0;
-  console.log(session);
   const cards = [
     {
       type: "email",

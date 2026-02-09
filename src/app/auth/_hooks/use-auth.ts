@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
   registerUserService,
@@ -440,7 +439,7 @@ export function useSendPhoneCodeActivation() {
     mutationFn: async () => {
       const result = await sendPhoneCodeActivation();
 
-      if (!result.success) {
+      if (result.success) {
         throw new Error(result.message);
       }
 
@@ -547,7 +546,7 @@ export function useActivePhone() {
  */
 export function useUpdateClient() {
   const { data: session, update } = useSession();
-  console.log(session);
+
   const { isPending, error, mutate, mutateAsync } = useMutation({
     mutationFn: async ({
       phoneNumber,
@@ -563,31 +562,36 @@ export function useUpdateClient() {
       }
 
       const result = await updateClient(userId, phoneNumber, email);
-      console.log(result.result);
+
       if (!result.success) {
         throw new Error(result.message);
       }
 
-      return { data: result.data, variables: { phoneNumber, email } };
+      return { phoneNumber, email };
     },
-    onSuccess: async ({ variables }) => {
+
+    onSuccess: async ({ phoneNumber, email }) => {
       toast.success("تم تحديث البيانات بنجاح");
 
-      // Update session with new values
-      const updates: any = {};
+      if (!session?.user) return;
 
-      if (variables.email) {
-        updates.email = variables.email;
-        updates.emailConfirmed = false;
-      }
+      await update({
+        user: {
+          ...session.user,
 
-      if (variables.phoneNumber) {
-        updates.phoneNumber = variables.phoneNumber;
-        updates.phoneNumberConfirmed = false;
-      }
+          ...(email && {
+            email,
+            emailConfirmed: false,
+          }),
 
-      await update(updates);
+          ...(phoneNumber && {
+            phoneNumber,
+            phoneNumberConfirmed: false,
+          }),
+        },
+      });
     },
+
     onError: (error: Error) => {
       toast.error(error.message || "حدث خطأ أثناء تحديث البيانات");
     },
